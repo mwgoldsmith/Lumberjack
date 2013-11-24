@@ -62,10 +62,27 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Logging\Config\ConfigurableBase.cs" />
+    <Compile Include="Logging\Config\FieldDataTypeEnum.cs" />
+    <Compile Include="Logging\Config\Fields\FieldConfigurator.cs" />
+    <Compile Include="Logging\Config\Fields\FieldElement.cs" />
+    <Compile Include="Logging\Config\Formats\ContentFormat.cs" />
+    <Compile Include="Logging\Config\Formats\EntryFormat.cs" />
+    <Compile Include="Logging\Config\Formats\FieldElement.cs" />
+    <Compile Include="Logging\Config\Formats\FilenameFormat.cs" />
+    <Compile Include="Logging\Config\Formats\FormatBase.cs" />
+    <Compile Include="Logging\Config\Formats\FormatConfigurator.cs" />
+    <Compile Include="Logging\Config\Formats\LogFormat.cs" />
+    <Compile Include="Logging\Config\Formats\RegexElement.cs" />
+    <Compile Include="Logging\Config\FormatTypeEnum.cs" />
+    <Compile Include="Logging\Config\Nodes\NodeConfigurator.cs" />
+    <Compile Include="Logging\Config\Nodes\NodeElement.cs" />
     <Compile Include="Logging\Entry.cs" />
     <Compile Include="Logging\Log.cs" />
     <Compile Include="Logging\Merging\Merger.cs" />
     <Compile Include="Logging\Merging\MergerEventArgs.cs" />
+    <Compile Include="Logging\MessageEmitterBase.cs" />
+    <Compile Include="Logging\MessageEmitterEventArgs.cs" />
     <Compile Include="Logging\Parsing\Parser.cs" />
     <Compile Include="Logging\Parsing\ParserEventArgs.cs" />
     <Compile Include="Logging\Session.cs" />
@@ -126,6 +143,7 @@
   <ItemGroup>
     <Content Include="wood-icon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
