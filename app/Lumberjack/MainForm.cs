@@ -3,13 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Medidata.Lumberjack.Logging;
-using Medidata.Lumberjack.Logging.Merging;
-using Medidata.Lumberjack.Logging.Parsing;
+using Medidata.Lumberjack.Logging.Processors;
 
 namespace Medidata.Lumberjack
 {
@@ -50,6 +48,11 @@ namespace Medidata.Lumberjack
         {
             startDateTimePicker.Value = startDateTimePicker.MinDate;
             endDateTimePicker.Value = startDateTimePicker.MaxDate;
+
+            // Load configurable data
+            _session.FieldConfigurator.Load();
+            _session.FormatConfigurator.Load();
+            _session.NodeConfigurator.Load();
         }
 
         /// <summary>
@@ -233,35 +236,6 @@ namespace Medidata.Lumberjack
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void reportLogsListViewListView_DragDrop(object sender, DragEventArgs e)
-        {
-            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (var file in files)
-                ReportsAddLogToList(file);
-
-            if (files.Length <= 0) return;
-
-            reportStartButton.Enabled = false;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void reportLogsListView_DragEnter(object sender, DragEventArgs e)
-        {
-            //if (_logJoiner.IsRunning)
-            //    e.Effect = DragDropEffects.None;
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                e.Effect = DragDropEffects.Copy;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void addLogFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_logJoiner.IsRunning) return;
@@ -371,30 +345,30 @@ namespace Medidata.Lumberjack
                 }
 
                 // Find the next log to parse
-                var log = _session.GetLogs().First(l => !l.IsParsed && l.LogType != LogType.None && l.FileSize > 0);
+                var log = _session.GetLogs().FirstOrDefault(l => !l.IsParsed && l.FormatType != null && l.FileSize > 0);
                 if (log == null) break;
 
                 /*
-                lock (_locker)
-                {
-                    count = _joinerLogQueue.Count;
-                    _logCount = count;
+                    lock (_locker)
+                    {
+                        count = _joinerLogQueue.Count;
+                        _logCount = count;
 
-                    for (var i = 0; i < count; i++)
-                        if (!_joinerLogQueue[i].IsParsed)
-                        {
-                            index = i;
-                            _logIndex = index;
-                            parsedLog = _joinerLogQueue[i];
-                            if (parsedLog.LogType == LogType.None) {
-                                continue;
+                        for (var i = 0; i < count; i++)
+                            if (!_joinerLogQueue[i].IsParsed)
+                            {
+                                index = i;
+                                _logIndex = index;
+                                parsedLog = _joinerLogQueue[i];
+                                if (parsedLog.LogType == LogType.None) {
+                                    continue;
+                                }
+                                break;
                             }
-                            break;
-                        }
-                }
+                    }
 
-                if (index == -1) break;
-                */
+                    if (index == -1) break;
+                    */
 
                 //if (File.Exists(parsedLog.FullFilename + Log.SavedStateFileExt))
 
@@ -404,16 +378,16 @@ namespace Medidata.Lumberjack
                     //parsedLog.IsParsed = true;
                     log.Deserialize();
                     log.IsParsed = true;
-                    
+
                     //_joinerLogQueue[_logIndex] = parsedLog;
-                    var progress = new ScannerProgress()
+                    var progress = new ScannerProgress
                         {
                             //Log = parsedLog,
                             //BytesRead = parsedLog.BytesParsed,
                             Log = log,
                             BytesRead = log.BytesParsed,
-                            CurrentLogIndex = 0,//_logIndex,
-                            TotalLogs = 0//_logCount
+                            CurrentLogIndex = 0, //_logIndex,
+                            TotalLogs = 0 //_logCount
                         };
 
                     //logScannerWorker.ReportProgress((int)(((double)_logIndex / (double)_logCount) * 100), progress);
@@ -428,24 +402,26 @@ namespace Medidata.Lumberjack
 
                     log.Md5Hash = log.ComputeHash();
                     var success = _session.Parser.Parse(log);
-
+                    if (!success)
+                    {
+                        log.FormatType = null; //TEMP
+                    }
                     _session.Parser.OnCompleted -= scanner_OnCompleted;
                     _session.Parser.OnStatusChange -= scanner_OnStatusChange;
                     /*
-                    var scanner = new Parser();
+                        var scanner = new Parser();
 
-                    scanner.UseDirAsNodeName = useParentDirAsNodeToolStripMenuItem.Checked;
-                    scanner.OnStatusChange += scanner_OnStatusChange;
-                    scanner.OnCompleted += scanner_OnCompleted;
+                        scanner.UseDirAsNodeName = useParentDirAsNodeToolStripMenuItem.Checked;
+                        scanner.OnStatusChange += scanner_OnStatusChange;
+                        scanner.OnCompleted += scanner_OnCompleted;
 
-                    parsedLog.Md5Hash = parsedLog.ComputeHash();
-                    var success = scanner.Parse(parsedLog);
+                        parsedLog.Md5Hash = parsedLog.ComputeHash();
+                        var success = scanner.Parse(parsedLog);
 
-                    scanner.OnCompleted -= scanner_OnCompleted;
-                    scanner.OnStatusChange -= scanner_OnStatusChange;*/
+                        scanner.OnCompleted -= scanner_OnCompleted;
+                        scanner.OnStatusChange -= scanner_OnStatusChange;*/
                 }
             }
-
         }
 
         void scanner_OnCompleted(object source, ParserEventArgs e)
@@ -454,7 +430,7 @@ namespace Medidata.Lumberjack
            // {
                 //_joinerLogQueue[_logIndex] = e.CurParsedLog;
 
-                var progress = new ScannerProgress()
+                var progress = new ScannerProgress
                 {
                     Log = e.CurParsedLog,
                     BytesRead = e.CurParsedLog.BytesParsed,
@@ -475,7 +451,7 @@ namespace Medidata.Lumberjack
         {
             //lock (_locker)
            // {
-                var progress = new ScannerProgress()
+                var progress = new ScannerProgress
                 {
                     Log = e.CurParsedLog,
                     BytesRead = e.CurParsedLog.BytesParsed,
@@ -661,7 +637,7 @@ namespace Medidata.Lumberjack
                 var items = new[]
                     {
                         l.Filename,
-                        l.LogType.ToString(),
+                        l.FormatType,
                         FormatFileSize(l.FileSize),
                         "?", "?", "?", "?", "?", "?", "?", "?"
                     };
@@ -715,7 +691,7 @@ namespace Medidata.Lumberjack
             var items = new[]
                 {
                     log.Filename,
-                    log.LogType.ToString(),
+                    log.FormatType,
                     FormatFileSize(log.FileSize),
                     "?", "?", "?", "?", "?", "?", "?", "?"
                 };
@@ -741,34 +717,6 @@ namespace Medidata.Lumberjack
                 var item = new ListViewItem(items);
                 item.Tag = parsedLog;
                 joinerLogsListView.Items.Add(item);
-                _joinerLogQueue.Add(parsedLog);
-            }*/
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="filename"></param>
-        private void ReportsAddLogToList(string filename)
-        {/*
-            // Verify the file dose not already exist
-            if (_reportsLogQueue.Any(item => item.FullFilename.ToUpper() == filename.ToUpper()))
-                return;
-
-            var parsedLog = new Log(filename);
-
-            var items = new[]
-            {
-                parsedLog.Filename,
-                parsedLog.LogType.ToString(),
-                FormatFileSize(parsedLog.FileSize)
-            };
-
-            lock (_locker)
-            {
-                var item = new ListViewItem(items);
-                item.Tag = parsedLog;
-                reportLogsListView.Items.Add(item);
                 _joinerLogQueue.Add(parsedLog);
             }*/
         }
@@ -914,10 +862,14 @@ namespace Medidata.Lumberjack
                 case "WARN":
                 case "ERROR":
                 case "FATAL":
-                    int intX = 0;
-                    int intY = 0;
-                    int.TryParse(textX, out intX);
-                    int.TryParse(textY, out intY);
+                    int intX;
+                    int intY;
+
+                    if (textX == "?") intX = int.MaxValue;
+                    else int.TryParse(textX, out intX);
+
+                    if (textY == "?") intY = int.MaxValue;
+                    else int.TryParse(textY, out intY);
 
                     compareResult = ObjectCompare.Compare(intX, intY);
                     break;

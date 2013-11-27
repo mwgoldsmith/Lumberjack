@@ -47,7 +47,7 @@ namespace Medidata.Lumberjack.Logging
     /// 
     /// </summary>
     [ProtoContract]
-    public class Log : ICloneable
+    public class Log
     {
         #region Private fields
 
@@ -87,19 +87,21 @@ namespace Medidata.Lumberjack.Logging
                 FullFilename = Path.GetFullPath(filename);
                 Filename = Path.GetFileName(filename);
                 FileSize = new FileInfo(filename).Length;
-                LogType = GetType(filename);
-                Project = GetProject(filename);
-                NodeName = GetNode(filename);
+                //LogType = GetType(filename);
+                //Project = GetProject(filename);
+                //NodeName = GetNode(filename);
             }
             else
             {
                 FullFilename = null;
                 Filename = null;
                 FileSize = 0;
-                LogType = LogType.None;
-                Project = null;
-                NodeName = null;
             }
+
+            FormatType = null;
+            //LogType = LogType.None;
+            Project = null;
+            NodeName = null;
 
             TraceCount = 0;
             DebugCount = 0;
@@ -151,8 +153,14 @@ namespace Medidata.Lumberjack.Logging
         /// <summary>
         /// 
         /// </summary>
+        //TODO: Deprecate in favor of FormatType
+        //public LogType LogType { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         [ProtoMember(5)]
-        public LogType LogType { get; set; }
+        public string FormatType { get; set; }
 
         /// <summary>
         /// 
@@ -166,6 +174,10 @@ namespace Medidata.Lumberjack.Logging
         [ProtoMember(7)]
         public string NodeName { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Stage { get; set; }
 
         /// <summary>
         /// 
@@ -270,7 +282,6 @@ namespace Medidata.Lumberjack.Logging
             var filename = Path.GetFileName(fullFilename);
             if (filename == null) return LogType.None;
 
-            // TODO: refactor regex
 
             string type;
             var m = _reAwsLogType.Match(filename);
@@ -283,23 +294,7 @@ namespace Medidata.Lumberjack.Logging
 
                 type = m.Groups[3].ToString().ToUpper();
             }
-
-            // TODO: Support the following:
-            // nginx:
-            //  access
-            //  sslAccess
-            //  error
-            //  sslError
-            // Velocity
-            // Calatina
-            // GenerateActivities, (no logs with data found yet!)
-
-            /* Format for Velocity:
-                Mon Nov 18 02:05:16 UTC 2013  [error] Left side ($form.v_serviceIdAlias.indexOf("_portfolio")) of '>=' operation has null value at <unknown template>[line 5, column 62]
-                Mon Nov 18 02:05:16 UTC 2013  [error] Left side ($form.v_serviceIdAlias.indexOf("_contacts")) of '>=' operation has null value at <unknown template>[line 3, column 93]
-                Mon Nov 18 02:05:16 UTC 2013  [error] Left side ($form.v_serviceIdAlias.indexOf("_customer")) of '>=' operation has null value at <unknown template>[line 4, column 61]
-             */
-
+            
             switch (type)
             {
                 case "ACCESS": return LogType.None; // LogType.Access;
@@ -462,7 +457,7 @@ namespace Medidata.Lumberjack.Logging
                 if (FullFilename != null)
                 {
                     // ... but if it was, ensure the '.tree' file is for the same log
-                    if (size != log.FileSize || LogType != log.LogType || Project != log.Project)
+                    if (size != log.FileSize || FormatType != log.FormatType || Project != log.Project)
                         return false;
 
                     // TODO: In the future, this should probably be done using a hash
@@ -471,9 +466,10 @@ namespace Medidata.Lumberjack.Logging
                 FullFilename = log.FullFilename;
                 Filename = log.Filename;
                 FileSize = log.FileSize;
-                LogType = log.LogType;
+                FormatType = log.FormatType;
                 Project = log.Project;
                 NodeName = log.NodeName;
+                Stage = log.Stage;
 
                 Entries = log.Entries;
                 EndTime = log.EndTime;
@@ -569,44 +565,5 @@ namespace Medidata.Lumberjack.Logging
         }
 
         #endregion
-
-        #region ICloneable implementation
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public object Clone()
-        {
-            return Clone(false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="entries"></param>
-        /// <returns></returns>
-        public object Clone(bool entries)
-        {
-            var log = (Log)MemberwiseClone();
-            
-            log.FullFilename = string.Copy(this.FullFilename);
-            log.Filename = string.Copy(this.Filename);
-            log.Project = string.Copy(this.Project);
-            log.NodeName = string.Copy(this.NodeName);
-
-            log.Entries = new Entry[Entries.Length];
-            if (entries)
-            {
-                for (var i = 0; i < Entries.Length; i++)
-                {
-                    log.Entries[i] = (Entry) Entries[i].Clone();
-                }
-            }
-
-            return log;
-        }
-
-        #endregion 
     }
 }

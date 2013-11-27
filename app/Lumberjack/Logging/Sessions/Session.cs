@@ -2,7 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Medidata.Lumberjack.Logging.Parsing;
+using Medidata.Lumberjack.Logging.Config.Fields;
+using Medidata.Lumberjack.Logging.Config.Formats;
+using Medidata.Lumberjack.Logging.Config.Nodes;
+using Medidata.Lumberjack.Logging.Processors;
 
 namespace Medidata.Lumberjack.Logging
 {
@@ -29,7 +32,12 @@ namespace Medidata.Lumberjack.Logging
         public Session(string name)
         {
             Name = name;
-            Parser = new Parser();
+            
+            Parser = new Parser(this);
+
+            NodeConfigurator = new NodeConfigurator();
+            FormatConfigurator = new FormatConfigurator();
+            FieldConfigurator = new FieldConfigurator();
         }
 
         /// <summary>
@@ -89,6 +97,21 @@ namespace Medidata.Lumberjack.Logging
         /// 
         /// </summary>
         public Parser Parser { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public NodeConfigurator NodeConfigurator { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public FormatConfigurator FormatConfigurator { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public FieldConfigurator FieldConfigurator { get; private set; }
 
         #endregion
 
@@ -176,7 +199,10 @@ namespace Medidata.Lumberjack.Logging
         public Log AddLog(string filename)
         {
             var log = new Log(filename);
-            
+
+            // Obtain whataver fields we can from the filename
+            Parser.ParseFilename(log);
+
             return AddLog(log) ? log : null;
         }
 
@@ -208,7 +234,16 @@ namespace Medidata.Lumberjack.Logging
         /// <returns></returns>
         public Log[] AddLogRange(ICollection<string> filenames)
         {
-            var logs = filenames.Select(f => new Log(f)).ToList();
+            var logs = filenames.Select(f =>
+                {
+                    var log = new Log(f);
+
+                    // Obtain whataver fields we can from the filename
+                    Parser.ParseFilename(log);
+
+                    System.Diagnostics.Debug.WriteLine("{0}\t\t{1}\t\t{2}", log.FormatType, log.Project, log.Filename);
+                    return log;
+                }).ToList();
 
             return AddLogRange(logs);
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Medidata.Lumberjack.Logging.Merging
+namespace Medidata.Lumberjack.Logging.Processors
 {
     public enum MergerAction
     {

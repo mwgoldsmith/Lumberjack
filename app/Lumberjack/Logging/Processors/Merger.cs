@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Medidata.Lumberjack.Logging.Merging
+namespace Medidata.Lumberjack.Logging.Processors
 {
     public class Merger
     {

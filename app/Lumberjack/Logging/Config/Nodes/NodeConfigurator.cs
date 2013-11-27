@@ -17,7 +17,7 @@ namespace Medidata.Lumberjack.Logging.Config.Nodes
         /// 
         /// </summary>
         public NodeConfigurator()
-            : this(null)
+            : this("NodesFilename")
         {
             
         }
@@ -25,9 +25,9 @@ namespace Medidata.Lumberjack.Logging.Config.Nodes
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="filename"></param>
-        public NodeConfigurator(string filename)
-            : base(filename)
+        /// <param name="settingsKey"></param>
+        public NodeConfigurator(string settingsKey)
+            : base(settingsKey)
         {
             Nodes = new List<NodeElement>();
         }

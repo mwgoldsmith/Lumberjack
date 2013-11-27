@@ -44,6 +44,9 @@
     <Reference Include="protobuf-net">
       <HintPath>..\Protobuf\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="Renci.SshNet">
+      <HintPath>packages\SSH.NET.2013.4.7\lib\net40\Renci.SshNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -77,15 +80,20 @@
     <Compile Include="Logging\Config\FormatTypeEnum.cs" />
     <Compile Include="Logging\Config\Nodes\NodeConfigurator.cs" />
     <Compile Include="Logging\Config\Nodes\NodeElement.cs" />
-    <Compile Include="Logging\Entry.cs" />
-    <Compile Include="Logging\Log.cs" />
-    <Compile Include="Logging\Merging\Merger.cs" />
-    <Compile Include="Logging\Merging\MergerEventArgs.cs" />
+    <Compile Include="Logging\CryptoAes.cs" />
+    <Compile Include="Logging\Sessions\Entry.cs" />
+    <Compile Include="Logging\Handlers\Sftp\SecureConnectionBase.cs" />
+    <Compile Include="Logging\Handlers\Sftp\SecureErrorTypeEnum.cs" />
+    <Compile Include="Logging\Handlers\Sftp\SftpConnection.cs" />
+    <Compile Include="Logging\Sessions\Log.cs" />
+    <Compile Include="Logging\Processors\Merger.cs" />
+    <Compile Include="Logging\Processors\MergerEventArgs.cs" />
     <Compile Include="Logging\MessageEmitterBase.cs" />
     <Compile Include="Logging\MessageEmitterEventArgs.cs" />
-    <Compile Include="Logging\Parsing\Parser.cs" />
-    <Compile Include="Logging\Parsing\ParserEventArgs.cs" />
-    <Compile Include="Logging\Session.cs" />
+    <Compile Include="Logging\Processors\Parser.cs" />
+    <Compile Include="Logging\Processors\ParserEventArgs.cs" />
+    <Compile Include="Logging\Sessions\Session.cs" />
+    <Compile Include="Logging\Sessions\SessionComponentBase.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -130,6 +138,7 @@
     </Compile>
     <None Include="app.config" />
     <None Include="app.manifest" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -143,7 +152,9 @@
   <ItemGroup>
     <Content Include="wood-icon.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Logging\Handlers\Local\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -11,5 +11,14 @@
     <Setting Name="NodesFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)">nodes.xml</Value>
     </Setting>
+    <Setting Name="SshUsernameAes" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SshPassphraseAes" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SshKeyFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

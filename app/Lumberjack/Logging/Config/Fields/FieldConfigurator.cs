@@ -16,7 +16,7 @@ namespace Medidata.Lumberjack.Logging.Config.Fields
         /// 
         /// </summary>
         public FieldConfigurator()
-            : this(null)
+            : this("FieldsFilename")
         {
             
         }
@@ -24,9 +24,9 @@ namespace Medidata.Lumberjack.Logging.Config.Fields
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="filename"></param>
-        public FieldConfigurator(string filename)
-            : base(filename)
+        /// <param name="settingsKey"></param>
+        public FieldConfigurator(string settingsKey)
+            : base(settingsKey)
         {
             Fields = new List<FieldElement>();
         }

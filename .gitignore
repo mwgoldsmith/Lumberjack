@@ -23,3 +23,4 @@
 /app/Lumberjack/obj/*
 /app/Lumberjack/obj/
 /app/Lumberjack/nodes.xml
+/app/Lumberjack/bin/Debug/nodes.xml

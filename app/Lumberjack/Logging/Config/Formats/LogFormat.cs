@@ -27,6 +27,12 @@ namespace Medidata.Lumberjack.Logging.Config.Formats
         /// <summary>
         /// 
         /// </summary>
+        [XmlAttribute("timestampFormat", DataType = "string")]
+        public string TimestampFormat { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         [XmlElement("filename", typeof(FilenameFormat))]
         public FilenameFormat Filename { get; set; }
 

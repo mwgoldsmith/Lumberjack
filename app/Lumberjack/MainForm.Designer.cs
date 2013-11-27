@@ -56,14 +56,6 @@
             this.clearLogFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.propertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reportsTabPage = new System.Windows.Forms.TabPage();
-            this.reportPauseButton = new System.Windows.Forms.Button();
-            this.reportStartButton = new System.Windows.Forms.Button();
-            this.reportLogsListView = new System.Windows.Forms.ListView();
-            this.rptFilenameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.rptLogletColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.rptFilesizeColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.tabPage3 = new System.Windows.Forms.TabPage();
             this.mainMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -80,7 +72,6 @@
             this.mainTabControl.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.logFileContextMenu.SuspendLayout();
-            this.reportsTabPage.SuspendLayout();
             this.mainMenuStrip.SuspendLayout();
             this.mainStatusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -91,8 +82,6 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.mainTabControl.Controls.Add(this.tabPage1);
-            this.mainTabControl.Controls.Add(this.reportsTabPage);
-            this.mainTabControl.Controls.Add(this.tabPage3);
             this.mainTabControl.Location = new System.Drawing.Point(0, 24);
             this.mainTabControl.Name = "mainTabControl";
             this.mainTabControl.SelectedIndex = 0;
@@ -312,93 +301,6 @@
             this.propertiesToolStripMenuItem.Text = "Properties";
             this.propertiesToolStripMenuItem.Click += new System.EventHandler(this.propertiesToolStripMenuItem_Click);
             // 
-            // reportsTabPage
-            // 
-            this.reportsTabPage.Controls.Add(this.reportPauseButton);
-            this.reportsTabPage.Controls.Add(this.reportStartButton);
-            this.reportsTabPage.Controls.Add(this.reportLogsListView);
-            this.reportsTabPage.Location = new System.Drawing.Point(4, 22);
-            this.reportsTabPage.Name = "reportsTabPage";
-            this.reportsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.reportsTabPage.Size = new System.Drawing.Size(980, 395);
-            this.reportsTabPage.TabIndex = 1;
-            this.reportsTabPage.Text = "Report Analysis";
-            this.reportsTabPage.UseVisualStyleBackColor = true;
-            // 
-            // reportPauseButton
-            // 
-            this.reportPauseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.reportPauseButton.Enabled = false;
-            this.reportPauseButton.Location = new System.Drawing.Point(821, 369);
-            this.reportPauseButton.Name = "reportPauseButton";
-            this.reportPauseButton.Size = new System.Drawing.Size(75, 23);
-            this.reportPauseButton.TabIndex = 4;
-            this.reportPauseButton.Text = "Pause";
-            this.reportPauseButton.UseVisualStyleBackColor = true;
-            this.reportPauseButton.Visible = false;
-            this.reportPauseButton.Click += new System.EventHandler(this.reportPauseButton_Click);
-            // 
-            // reportStartButton
-            // 
-            this.reportStartButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.reportStartButton.Enabled = false;
-            this.reportStartButton.Location = new System.Drawing.Point(902, 369);
-            this.reportStartButton.Name = "reportStartButton";
-            this.reportStartButton.Size = new System.Drawing.Size(75, 23);
-            this.reportStartButton.TabIndex = 3;
-            this.reportStartButton.Text = "Start";
-            this.reportStartButton.UseVisualStyleBackColor = true;
-            this.reportStartButton.Visible = false;
-            this.reportStartButton.Click += new System.EventHandler(this.reportStartButton_Click);
-            // 
-            // reportLogsListView
-            // 
-            this.reportLogsListView.AllowDrop = true;
-            this.reportLogsListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.reportLogsListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.rptFilenameColumnHeader,
-            this.rptLogletColumnHeader,
-            this.rptFilesizeColumnHeader});
-            this.reportLogsListView.GridLines = true;
-            this.reportLogsListView.LabelWrap = false;
-            this.reportLogsListView.Location = new System.Drawing.Point(3, 0);
-            this.reportLogsListView.Name = "reportLogsListView";
-            this.reportLogsListView.ShowGroups = false;
-            this.reportLogsListView.Size = new System.Drawing.Size(974, 360);
-            this.reportLogsListView.TabIndex = 0;
-            this.reportLogsListView.UseCompatibleStateImageBehavior = false;
-            this.reportLogsListView.View = System.Windows.Forms.View.Details;
-            this.reportLogsListView.Visible = false;
-            this.reportLogsListView.DragDrop += new System.Windows.Forms.DragEventHandler(this.reportLogsListViewListView_DragDrop);
-            this.reportLogsListView.DragEnter += new System.Windows.Forms.DragEventHandler(this.reportLogsListView_DragEnter);
-            // 
-            // rptFilenameColumnHeader
-            // 
-            this.rptFilenameColumnHeader.Text = "Filename";
-            this.rptFilenameColumnHeader.Width = 366;
-            // 
-            // rptLogletColumnHeader
-            // 
-            this.rptLogletColumnHeader.Text = "Loglet";
-            this.rptLogletColumnHeader.Width = 87;
-            // 
-            // rptFilesizeColumnHeader
-            // 
-            this.rptFilesizeColumnHeader.Text = "Filesize";
-            this.rptFilesizeColumnHeader.Width = 87;
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(980, 395);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Download Logs";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
             // mainMenuStrip
             // 
             this.mainMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -515,7 +417,6 @@
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             this.logFileContextMenu.ResumeLayout(false);
-            this.reportsTabPage.ResumeLayout(false);
             this.mainMenuStrip.ResumeLayout(false);
             this.mainMenuStrip.PerformLayout();
             this.mainStatusStrip.ResumeLayout(false);
@@ -529,7 +430,6 @@
 
         private System.Windows.Forms.TabControl mainTabControl;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage reportsTabPage;
         private System.Windows.Forms.DateTimePicker endDateTimePicker;
         private System.Windows.Forms.DateTimePicker startDateTimePicker;
         private System.Windows.Forms.Label label2;
@@ -556,18 +456,11 @@
         private System.Windows.Forms.SaveFileDialog saveLogFileDialog;
         private System.Windows.Forms.StatusStrip mainStatusStrip;
         private System.Windows.Forms.ToolStripStatusLabel mainStatusMessage;
-        private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.ColumnHeader errorColumnHeader;
         private System.Windows.Forms.ColumnHeader warnColumnHeader;
         private System.Windows.Forms.ColumnHeader infoColumnHeader;
         private System.Windows.Forms.ColumnHeader traceColumnHeader;
         private System.Windows.Forms.ColumnHeader debugColumnHeader;
-        private System.Windows.Forms.Button reportPauseButton;
-        private System.Windows.Forms.Button reportStartButton;
-        private System.Windows.Forms.ListView reportLogsListView;
-        private System.Windows.Forms.ColumnHeader rptFilenameColumnHeader;
-        private System.Windows.Forms.ColumnHeader rptLogletColumnHeader;
-        private System.Windows.Forms.ColumnHeader rptFilesizeColumnHeader;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem useParentDirAsNodeToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel mainStatusTotals;

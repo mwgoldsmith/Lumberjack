@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Medidata.Lumberjack.Logging.Parsing
+namespace Medidata.Lumberjack.Logging.Processors
 {
     #region Delegates
 

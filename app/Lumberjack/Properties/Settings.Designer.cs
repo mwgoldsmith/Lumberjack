@@ -58,5 +58,41 @@ namespace Medidata.Lumberjack.Properties {
                 this["NodesFilename"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SshUsernameAes {
+            get {
+                return ((string)(this["SshUsernameAes"]));
+            }
+            set {
+                this["SshUsernameAes"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SshPassphraseAes {
+            get {
+                return ((string)(this["SshPassphraseAes"]));
+            }
+            set {
+                this["SshPassphraseAes"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SshKeyFilename {
+            get {
+                return ((string)(this["SshKeyFilename"]));
+            }
+            set {
+                this["SshKeyFilename"] = value;
+            }
+        }
     }
 }
