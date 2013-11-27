@@ -29,4 +29,8 @@ Enable NuGet to automatically download missing packages:
 
  1. Navigate to: Options -> Package Manager -> General
  2. Check '*Allow NuGet to download missing packages during build*'
+<<<<<<< HEAD
  3. Click *Ok*
+=======
+ 3. Click *Ok*
+>>>>>>> ff53d7f20fe470cbd3f97161f7e932c66852128c
