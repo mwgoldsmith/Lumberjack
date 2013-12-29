@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Medidata.Lumberjack.UI.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="FieldsFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">fields.xml</Value>
+    </Setting>
+    <Setting Name="FormatsFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">formats.xml</Value>
+    </Setting>
+    <Setting Name="NodesFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">nodes.xml</Value>
+    </Setting>
+    <Setting Name="ShowMessages" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShowLogFiles" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShowEntries" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="LogFilesListViewColumns" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Filename:200,Size:75,Format:100,Total Entries:75,TRACE:75,DEBUG:75,INFO:75,WARN:75,ERROR:75</Value>
+    </Setting>
+    <Setting Name="EntriesListViewColumns" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Timestamp:100,Level:100,Message:200</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

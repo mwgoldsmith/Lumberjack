@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F74E2BA1-24D6-435B-8182-E7EF3727A442}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Medidata.Lumberjack.Core</RootNamespace>
+    <AssemblyName>Medidata.Lumberjack.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;CONTRACTS_FULL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>False</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
+    <CodeContractsRunCodeAnalysis>True</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>False</CodeContractsArithmeticObligations>
+    <CodeContractsEnumObligations>False</CodeContractsEnumObligations>
+    <CodeContractsRedundantAssumptions>False</CodeContractsRedundantAssumptions>
+    <CodeContractsMissingPublicRequiresAsWarnings>True</CodeContractsMissingPublicRequiresAsWarnings>
+    <CodeContractsInferRequires>True</CodeContractsInferRequires>
+    <CodeContractsInferEnsures>False</CodeContractsInferEnsures>
+    <CodeContractsInferObjectInvariants>False</CodeContractsInferObjectInvariants>
+    <CodeContractsSuggestAssumptions>False</CodeContractsSuggestAssumptions>
+    <CodeContractsSuggestRequires>True</CodeContractsSuggestRequires>
+    <CodeContractsSuggestObjectInvariants>False</CodeContractsSuggestObjectInvariants>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>True</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsExtraRewriteOptions />
+    <CodeContractsExtraAnalysisOptions />
+    <CodeContractsSQLServerOption />
+    <CodeContractsBaseLineFile />
+    <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
+    <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
+    <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Config\ConfigurableBase.cs" />
+    <Compile Include="Config\Fields\FieldConfigurator.cs" />
+    <Compile Include="Config\Fields\FieldContextElement.cs" />
+    <Compile Include="Config\Fields\FieldElement.cs" />
+    <Compile Include="Config\Formats\FormatConfigurator.cs" />
+    <Compile Include="Config\Formats\FormatContextElement.cs" />
+    <Compile Include="Config\Formats\FormatElement.cs" />
+    <Compile Include="Config\Formats\FormatFieldElement.cs" />
+    <Compile Include="Config\Formats\RegexElement.cs" />
+    <Compile Include="Config\Nodes\NodeConfigurator.cs" />
+    <Compile Include="Config\Nodes\NodeElement.cs" />
+    <Compile Include="Data\Collections\CollectionBase.cs" />
+    <Compile Include="Data\Collections\ContextCollection.cs" />
+    <Compile Include="Data\Collections\EntryCollection.cs" />
+    <Compile Include="Data\Collections\FieldValueCollection.cs" />
+    <Compile Include="Data\Collections\FormatFieldCollection.cs" />
+    <Compile Include="Data\Collections\LogFileCollection.cs" />
+    <Compile Include="Data\Collections\SessionFieldCollection.cs" />
+    <Compile Include="Data\Collections\SessionFormatCollection.cs" />
+    <Compile Include="Data\ContextFormat.cs" />
+    <Compile Include="Data\Entry.cs" />
+    <Compile Include="Data\FieldBase.cs" />
+    <Compile Include="Data\FieldContextFlags.cs" />
+    <Compile Include="Data\FieldDataTypeEnum.cs" />
+    <Compile Include="Data\FieldValueLookup.cs" />
+    <Compile Include="Data\FormatContextEnum.cs" />
+    <Compile Include="Data\FormatField.cs" />
+    <Compile Include="Data\IFieldValueContainer.cs" />
+    <Compile Include="Data\LogFile.cs" />
+    <Compile Include="Data\SessionField.cs" />
+    <Compile Include="Data\SessionFormat.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="FileUtil.cs" />
+    <Compile Include="Logging\EventLogger.cs" />
+    <Compile Include="Processing\EngineCompletedEventArgs.cs" />
+    <Compile Include="Processing\EngineProgressChangedEventArgs.cs" />
+    <Compile Include="SessionObject.cs" />
+    <Compile Include="Logging\MessageEventArgs.cs" />
+    <Compile Include="Logging\MessageTypeEnum.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Processing\ProcessController.cs" />
+    <Compile Include="Processing\ProcessTypeEnum.cs" />
+    <Compile Include="Processing\EngineBase.cs" />
+    <Compile Include="Processing\EngineMetrics.cs" />
+    <Compile Include="Processing\EngineState.cs" />
+    <Compile Include="Processing\EngineStatusEnum.cs" />
+    <Compile Include="Processing\EntryParsingEngine.cs" />
+    <Compile Include="Processing\FileParsingEngine.cs" />
+    <Compile Include="Processing\HashingEngine.cs" />
+    <Compile Include="Processing\EngineEventArgs.cs" />
+    <Compile Include="Processing\ProcessEventHandler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SerializableBase.cs" />
+    <Compile Include="SessionFactory.cs" />
+    <Compile Include="SessionSettings.cs" />
+    <Compile Include="UserSession.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Diagrams\ClassDiagram2.cd" />
+    <None Include="Diagrams\ClassDiagram1.cd" />
+    <None Include="Diagrams\Engines.cd" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
