@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<fields xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <field name="PROJECT" display="Project" required="true" filterable="true" dataType="string">
+    <context name="filename" />
+    <context name="entry" />
+    <context name="content" />
+  </field>
+  <field name="STAGE" display="Stage" required="false" filterable="true" dataType="string">
+    <context name="filename" />
+    <context name="entry" />
+    <context name="content" />
+  </field>
+  <field name="NODE" display="Node" required="false" filterable="true" dataType="string">
+    <context name="filename" />
+    <context name="entry" />
+    <context name="content" />
+  </field>
+  <field name="CLOUD" display="Cloud" required="false" filterable="true" dataType="string">
+    <context name="filename" />
+    <context name="entry" />
+    <context name="content" />
+  </field>
+  <field name="TIMESTAMP" display="Timestamp" required="true" dataType="datetime">
+    <context name="entry" />
+  </field>
+  <field name="LEVEL" display="Level" required="true" filterable="true" dataType="string">
+    <context name="entry" />
+  </field>
+  <field name="CONTENT" required="true" dataType="string">
+    <context name="entry" />
+  </field>
+  <field name="USER" display="User" required="false" filterable="true" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="SERVICE" display="Service Name" required="false" filterable="true" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="THREADID" display="Thread ID" required="false" filterable="true" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="CLASSNAME" display="Class Name" required="false" filterable="true" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="TABLE" display="Table Name" required="false" filterable="true" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="SQLID" display="SQL ID" required="false" filterable="true" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="SQL" display="SQL" required="false" filterable="false" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="RESOURCEID" display="Resource ID" required="false" filterable="true" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="MESSAGE" display="Message" required="false" dataType="string">
+    <context name="content" />
+  </field>
+  <field name="INSTANCEUUID" display="Instance UUID" required="false" dataType="string">
+    <context name="content" />
+  </field>
+</fields>
