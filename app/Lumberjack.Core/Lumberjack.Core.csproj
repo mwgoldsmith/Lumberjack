@@ -138,7 +138,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Diagrams\ClassDiagram2.cd" />
-    <None Include="Diagrams\ClassDiagram1.cd" />
     <None Include="Diagrams\Engines.cd" />
     <None Include="packages.config" />
   </ItemGroup>

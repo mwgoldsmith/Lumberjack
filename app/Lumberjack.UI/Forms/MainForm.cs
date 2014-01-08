@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -156,6 +157,15 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void addLocalLogsContextToolStripMenuItem_Click(object sender, EventArgs e) {
+            addLocalLogsToolStripMenuItem.PerformClick();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void addLogsFromSFTPToolStripMenuItem_Click(object sender, EventArgs e) {
             // TODO: Implement
         }
@@ -165,8 +175,26 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void addLogsFromSFTPContextToolStripMenuItem_Click(object sender, EventArgs e) {
+            addLogsFromSFTPToolStripMenuItem.PerformClick();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void removeSelectedLogsToolStripMenuItem_Click(object sender, EventArgs e) {
-            // TODO: Implement
+            RemoveLogFiles(logsListView, logsListView.SelectedItems);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void removeSelectedContextToolStripMenuItem_Click(object sender, EventArgs e) {
+            removeSelectedLogsToolStripMenuItem.PerformClick();
         }
 
         /// <summary>
@@ -175,7 +203,20 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void clearLogsToolStripMenuItem_Click(object sender, EventArgs e) {
-            // TODO: Implement
+            var control = (ListView) sender;
+
+            RemoveLogFiles(control, logsListView.Items);
+
+            control.SelectedItems.Clear();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void clearLogsContextToolStripMenuItem_Click(object sender, EventArgs e) {
+            clearLogsToolStripMenuItem.PerformClick();
         }
 
         /// <summary>
@@ -189,7 +230,16 @@ namespace Medidata.Lumberjack.UI
                 return;
 
             var logs = (from ListViewItem lvi in items select ((LogFile)lvi.Tag)).ToArray();
-            (new LogPropertiesForm(logs)).ShowDialog();
+            (new LogPropertiesForm(_session, logs)).ShowDialog();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void logPropertiesContextToolStripMenuItem_Click(object sender, EventArgs e) {
+            logPropertiesToolStripMenuItem.PerformClick();
         }
 
         /// <summary>
@@ -361,7 +411,8 @@ namespace Medidata.Lumberjack.UI
             if (e.KeyCode != Keys.Delete)
                 return;
 
-            RemoveSelectedLogs((ListView)sender);
+            var control = (ListView) sender;
+            RemoveLogFiles(control, control.SelectedItems);
         }
 
         /// <summary>
@@ -394,9 +445,27 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void logsListView_MouseClick(object sender, MouseEventArgs e) {
+            if (e.Button != MouseButtons.Right)
+                return;
 
+            logsContextMenuStrip.Show(logsListView, e.Location);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void logsListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e) {
+            var control = (ListView)sender;
+            var selections = control.SelectedItems.Count > 0;
+
+            removeSelectedLogsToolStripMenuItem.Enabled = selections;
+            removeSelectedContextToolStripMenuItem.Enabled = selections;
+            logPropertiesToolStripMenuItem.Enabled = selections;
+            logPropertiesContextToolStripMenuItem.Enabled = selections;
+        }
+        
         #endregion
 
         #region Non-UI event handlers
@@ -630,22 +699,32 @@ namespace Medidata.Lumberjack.UI
         /// 
         /// </summary>
         /// <param name="control"></param>
-        private void RemoveSelectedLogs(ListView control) {
+        /// <param name="lvItemCollection"></param>
+        private void RemoveLogFiles<T>(ListView control, T lvItemCollection) where T : IEnumerable, IList, ICollection {
             //if (_logJoiner.IsRunning)
             //    return;
 
-            var items = control.SelectedItems;
-            if (items.Count == 0) return;
+            if (lvItemCollection.Count == 0)
+                return;
 
-            var logs = (from ListViewItem lvi in items select ((LogFile)lvi.Tag).FullFilename).ToArray();
-            _session.LogFiles.Remove(logs);
+            bool isEmpty;
 
-            // Remove the selected items from the list view control
-            control.SelectedItems.Clear();
+            lock (_locker) {
+                var items = (from ListViewItem lvi in lvItemCollection select lvi).ToArray();
+                var logFiles = (from ListViewItem lvi in items select (LogFile) lvi.Tag).ToArray();
 
-            for (var i = 0; i < items.Count; i++) {
-                control.Items.Remove(items[i]);
+                _session.LogFiles.Remove(logFiles);
+
+                // Remove the items from the list view control
+                for (var i = 0; i < items.Length; i++)
+                    control.Items.Remove(items[i]);
+
+                control.SelectedItems.Clear();
+                isEmpty = control.Items.Count == 0;
             }
+
+            clearLogsToolStripMenuItem.Enabled = !isEmpty;
+            clearLogsContextToolStripMenuItem.Enabled = !isEmpty;
         }
 
         /// <summary>
@@ -683,6 +762,10 @@ namespace Medidata.Lumberjack.UI
 
             lock (_locker)
                 logsListView.Items.AddRange(lvis.ToArray());
+
+            var enabled = lvis.Count > 0;
+            clearLogsToolStripMenuItem.Enabled = enabled;
+            clearLogsContextToolStripMenuItem.Enabled = enabled;
         }
 
         /// <summary>
@@ -891,5 +974,7 @@ namespace Medidata.Lumberjack.UI
         }
 
         #endregion
+
+
     }
 }

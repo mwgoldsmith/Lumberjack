@@ -33,13 +33,17 @@
             this.logPropertyListBox = new System.Windows.Forms.ListBox();
             this.logFileTextBox = new System.Windows.Forms.TextBox();
             this.logValueTextBox = new System.Windows.Forms.TextBox();
+            this.editButton = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.listView1 = new System.Windows.Forms.ListView();
             this.SuspendLayout();
             // 
             // okButton
             // 
             this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.okButton.Location = new System.Drawing.Point(445, 224);
+            this.okButton.Location = new System.Drawing.Point(445, 323);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 0;
@@ -63,7 +67,7 @@
             this.logPropertyListBox.FormattingEnabled = true;
             this.logPropertyListBox.Location = new System.Drawing.Point(12, 32);
             this.logPropertyListBox.Name = "logPropertyListBox";
-            this.logPropertyListBox.Size = new System.Drawing.Size(130, 186);
+            this.logPropertyListBox.Size = new System.Drawing.Size(130, 121);
             this.logPropertyListBox.TabIndex = 2;
             this.logPropertyListBox.SelectedIndexChanged += new System.EventHandler(this.logPropertyListBox_SelectedIndexChanged);
             // 
@@ -88,9 +92,49 @@
             this.logValueTextBox.Name = "logValueTextBox";
             this.logValueTextBox.ReadOnly = true;
             this.logValueTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.logValueTextBox.Size = new System.Drawing.Size(372, 186);
+            this.logValueTextBox.Size = new System.Drawing.Size(372, 285);
             this.logValueTextBox.TabIndex = 4;
             this.logValueTextBox.WordWrap = false;
+            // 
+            // editButton
+            // 
+            this.editButton.Enabled = false;
+            this.editButton.Location = new System.Drawing.Point(12, 322);
+            this.editButton.Name = "editButton";
+            this.editButton.Size = new System.Drawing.Size(75, 23);
+            this.editButton.TabIndex = 5;
+            this.editButton.Text = "Edit";
+            this.editButton.UseVisualStyleBackColor = true;
+            this.editButton.Click += new System.EventHandler(this.editButton_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 159);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(37, 13);
+            this.label2.TabIndex = 7;
+            this.label2.Text = "Fields:";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "Session Level",
+            "Format Level"});
+            this.comboBox1.Location = new System.Drawing.Point(53, 156);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(89, 21);
+            this.comboBox1.TabIndex = 8;
+            // 
+            // listView1
+            // 
+            this.listView1.Location = new System.Drawing.Point(12, 183);
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(130, 133);
+            this.listView1.TabIndex = 9;
+            this.listView1.UseCompatibleStateImageBehavior = false;
             // 
             // LogPropertiesForm
             // 
@@ -98,7 +142,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.okButton;
-            this.ClientSize = new System.Drawing.Size(532, 259);
+            this.ClientSize = new System.Drawing.Size(532, 358);
+            this.Controls.Add(this.listView1);
+            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.editButton);
             this.Controls.Add(this.logValueTextBox);
             this.Controls.Add(this.logFileTextBox);
             this.Controls.Add(this.logPropertyListBox);
@@ -122,5 +170,9 @@
         private System.Windows.Forms.ListBox logPropertyListBox;
         private System.Windows.Forms.TextBox logFileTextBox;
         private System.Windows.Forms.TextBox logValueTextBox;
+        private System.Windows.Forms.Button editButton;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ListView listView1;
     }
 }

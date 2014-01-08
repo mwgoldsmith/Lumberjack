@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Medidata.Lumberjack.Core;
 using Medidata.Lumberjack.Core.Data;
 using Medidata.Lumberjack.Core.Data.Collections;
 
@@ -38,6 +39,11 @@ namespace Medidata.Lumberjack.UI
             public int Count { get; set; }
         }
 
+        protected struct PropertyItem
+        {
+            public string DisplayText { get; set; }    
+        }
+
         #endregion
 
         #region Private fields
@@ -65,7 +71,9 @@ namespace Medidata.Lumberjack.UI
                 "Entry Statistics"
             };
 
-        private LogFile[] _logFiles;
+        private readonly LogFile[] _logFiles;
+        private readonly UserSession _session;
+
 
         #endregion
 
@@ -74,9 +82,12 @@ namespace Medidata.Lumberjack.UI
         /// <summary>
         /// Creates a new LogPropertiesForm instance
         /// </summary>
-        public LogPropertiesForm(LogFile[] logFiles) {
+        /// <param name="session"></param>
+        /// <param name="logFiles"></param>
+        public LogPropertiesForm(UserSession session, LogFile[] logFiles) {
             InitializeComponent();
             _logFiles = logFiles;
+            _session = session;
         }
 
         #endregion
@@ -89,6 +100,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void LogPropertiesForm_Load(object sender, EventArgs e) {
+            // Add standard log properties to list box
             if (_logFiles.Length == 1) {
                 logFileTextBox.Text = _logFiles[0].Filename;
                 logPropertyListBox.Items.AddRange(_singleProperties);
@@ -97,7 +109,17 @@ namespace Medidata.Lumberjack.UI
                 logPropertyListBox.Items.AddRange(_multiProperties);
             }
 
+            // Add log fields
+            var formatFieldList = new List<FormatField>();
+            foreach (var l in _logFiles) {
+                var curFormatFieldCol = l.SessionFormat.Contexts[FormatContextEnum.Filename].Fields;
+                var curFormatFields = new FormatField[curFormatFieldCol.Count];
+                curFormatFieldCol.CopyTo(curFormatFields, 0);
+                formatFieldList.AddRange(curFormatFields);
+            }
+
             logPropertyListBox.SelectedIndices.Add(0);
+
         }
 
         #endregion
@@ -326,5 +348,9 @@ namespace Medidata.Lumberjack.UI
         }
         
         #endregion
+
+        private void editButton_Click(object sender, EventArgs e) {
+
+        }
     }
 }

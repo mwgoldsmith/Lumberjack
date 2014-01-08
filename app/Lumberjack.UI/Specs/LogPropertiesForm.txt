@@ -1,0 +1,65 @@
+﻿Requirements
+------------
+ 
+Ability to operate in two distinct views:
+  - SINGLE view:  When properties for single LogFile are referenced
+  - MULTI view:   When properties for multiple LogFiles are referenced
+     
+A visible indicator of what LogFile(s) are referenced must exist
+  - SINGLE view:  The name of the referenced LogFile should be visible
+  - MULTI view:   The count of referenced LogFiles should be visible
+     
+Ability to dynamically modify which LogFiles are referenced
+  - Deselect currently referenced LogFiles
+  - Select any unreferenced LogFile existing in the session
+     
+Ability to be used when any combination of the below Processing Engines are or are not running:
+  - HashingEngine
+  - FileParsingEngine
+  - EntryParsingEngine
+     
+Must be aware of when a LogFile is removed from the UserSession
+  - When a referenced LogFile has been removed, it must be automatically unreferenced
+    . If only a single referenced LogFile remains:
+      The view must revert to SINGLE
+    . If no referenced LogFiles remain:
+      The form should clear and disable all controls except for any buttons which
+      cancel out of the form
+           
+Must be aware of when a referenced LogFile has been modified
+  - [ELABORATE]
+	 
+Must display information for referenced LogFiles
+  Standard Properties must be VIEWABLE:
+    - (any view):
+      . Full Filename
+      . Filesize
+      . Session Format
+      . Hashing Status
+      . Filename Parsing Status
+      . Entry Parsing Status
+      . Entry Statistics
+    - SINGLE view only:
+      . Id
+      . MD5 Hash
+  Field information must be VIEWABLE:
+	- [ELABORATE]
+
+Ability to enter an EDIT mode, where information for referenced LogFiles can be modified
+  Standard Properties must be EDITABLE:
+    - (any view):
+      . Session Format
+      . Hashing Status
+      . Filename Parsing Status
+      . Entry Parsing Status
+    - SINGLE view only:
+      . Full Filename
+  Field information bust be EDITABLE:
+    - [ELABORATE]
+    
+Ability to use EDIT mode must be disabled if any of the following editors are in use:
+   - Formats
+   - Session Fields
+   - Format Fields
+   - RegEx (sub-editor for Formats)
+     

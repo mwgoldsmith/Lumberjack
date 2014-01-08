@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
-    public abstract class CollectionBase<T> : SessionObject, IList<T>
+    public abstract class CollectionBase<T> : SessionObject, IList<T>, ICollection
     {
         #region Constants
 
@@ -60,12 +60,19 @@ namespace Medidata.Lumberjack.Core.Data.Collections
 
         #region Properties
 
+        public void CopyTo(Array array, int index) {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// 
         /// </summary>
         public int Count {
             get { return _items.Count; }
         }
+
+        public object SyncRoot { get; private set; }
+        public bool IsSynchronized { get; private set; }
 
         /// <summary>
         /// 

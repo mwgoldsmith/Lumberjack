@@ -68,13 +68,21 @@
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainStatusStrip = new System.Windows.Forms.StatusStrip();
+            this.mainStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainSplitContainer = new System.Windows.Forms.SplitContainer();
             this.logsListView = new System.Windows.Forms.ListView();
             this.entriesListView = new System.Windows.Forms.ListView();
             this.messageTimer = new System.Windows.Forms.Timer(this.components);
             this.messagesPanel = new System.Windows.Forms.Panel();
             this.messagesTextBox = new System.Windows.Forms.TextBox();
-            this.mainStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.logsContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.addLocalLogsContextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addLogsFromSFTPContextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeSelectedContextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearLogsContextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.logPropertiesContextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem11 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItem12 = new System.Windows.Forms.ToolStripSeparator();
             this.mainMenuStrip.SuspendLayout();
             this.mainStatusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.mainSplitContainer)).BeginInit();
@@ -82,6 +90,7 @@
             this.mainSplitContainer.Panel2.SuspendLayout();
             this.mainSplitContainer.SuspendLayout();
             this.messagesPanel.SuspendLayout();
+            this.logsContextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainMenuStrip
@@ -121,56 +130,56 @@
             this.toolStripMenuItem5,
             this.sessionPropertiesToolStripMenuItem});
             this.sessionToolStripMenuItem.Name = "sessionToolStripMenuItem";
-            this.sessionToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.sessionToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.sessionToolStripMenuItem.Text = "Session";
             // 
             // newSessionToolStripMenuItem
             // 
             this.newSessionToolStripMenuItem.Name = "newSessionToolStripMenuItem";
-            this.newSessionToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.newSessionToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.newSessionToolStripMenuItem.Text = "&New";
             this.newSessionToolStripMenuItem.Click += new System.EventHandler(this.newSessionToolStripMenuItem_Click);
             // 
             // toolStripMenuItem7
             // 
             this.toolStripMenuItem7.Name = "toolStripMenuItem7";
-            this.toolStripMenuItem7.Size = new System.Drawing.Size(133, 6);
+            this.toolStripMenuItem7.Size = new System.Drawing.Size(149, 6);
             // 
             // openSessionToolStripMenuItem
             // 
             this.openSessionToolStripMenuItem.Name = "openSessionToolStripMenuItem";
-            this.openSessionToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.openSessionToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.openSessionToolStripMenuItem.Text = "&Open...";
             this.openSessionToolStripMenuItem.Click += new System.EventHandler(this.openSessionToolStripMenuItem_Click);
             // 
             // toolStripMenuItem6
             // 
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(133, 6);
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(149, 6);
             // 
             // saveSessionToolStripMenuItem
             // 
             this.saveSessionToolStripMenuItem.Name = "saveSessionToolStripMenuItem";
-            this.saveSessionToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.saveSessionToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveSessionToolStripMenuItem.Text = "&Save";
             this.saveSessionToolStripMenuItem.Click += new System.EventHandler(this.saveSessionToolStripMenuItem_Click);
             // 
             // saveSessionAsToolStripMenuItem
             // 
             this.saveSessionAsToolStripMenuItem.Name = "saveSessionAsToolStripMenuItem";
-            this.saveSessionAsToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.saveSessionAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveSessionAsToolStripMenuItem.Text = "Save &as...";
             this.saveSessionAsToolStripMenuItem.Click += new System.EventHandler(this.saveSessionAsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
             // 
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(133, 6);
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(149, 6);
             // 
             // sessionPropertiesToolStripMenuItem
             // 
             this.sessionPropertiesToolStripMenuItem.Name = "sessionPropertiesToolStripMenuItem";
-            this.sessionPropertiesToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.sessionPropertiesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.sessionPropertiesToolStripMenuItem.Text = "&Properties...";
             this.sessionPropertiesToolStripMenuItem.Click += new System.EventHandler(this.sessionPropertiesToolStripMenuItem_Click);
             // 
@@ -185,7 +194,7 @@
             this.toolStripMenuItem4,
             this.logPropertiesToolStripMenuItem});
             this.logsToolStripMenuItem.Name = "logsToolStripMenuItem";
-            this.logsToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.logsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.logsToolStripMenuItem.Text = "Logs";
             // 
             // addLocalLogsToolStripMenuItem
@@ -209,6 +218,7 @@
             // 
             // removeSelectedLogsToolStripMenuItem
             // 
+            this.removeSelectedLogsToolStripMenuItem.Enabled = false;
             this.removeSelectedLogsToolStripMenuItem.Name = "removeSelectedLogsToolStripMenuItem";
             this.removeSelectedLogsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.removeSelectedLogsToolStripMenuItem.Text = "&Remove selected";
@@ -216,6 +226,7 @@
             // 
             // clearLogsToolStripMenuItem
             // 
+            this.clearLogsToolStripMenuItem.Enabled = false;
             this.clearLogsToolStripMenuItem.Name = "clearLogsToolStripMenuItem";
             this.clearLogsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.clearLogsToolStripMenuItem.Text = "&Clear";
@@ -228,6 +239,7 @@
             // 
             // logPropertiesToolStripMenuItem
             // 
+            this.logPropertiesToolStripMenuItem.Enabled = false;
             this.logPropertiesToolStripMenuItem.Name = "logPropertiesToolStripMenuItem";
             this.logPropertiesToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.logPropertiesToolStripMenuItem.Text = "&Properties...";
@@ -236,24 +248,24 @@
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(122, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
             // 
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.optionsToolStripMenuItem.Text = "&Options...";
             this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(122, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -385,6 +397,11 @@
             this.mainStatusStrip.TabIndex = 1;
             this.mainStatusStrip.Text = "statusStrip1";
             // 
+            // mainStripStatusLabel
+            // 
+            this.mainStripStatusLabel.Name = "mainStripStatusLabel";
+            this.mainStripStatusLabel.Size = new System.Drawing.Size(0, 17);
+            // 
             // mainSplitContainer
             // 
             this.mainSplitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -420,6 +437,7 @@
             this.logsListView.UseCompatibleStateImageBehavior = false;
             this.logsListView.View = System.Windows.Forms.View.Details;
             this.logsListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.logsListView_ColumnClick);
+            this.logsListView.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.logsListView_ItemSelectionChanged);
             this.logsListView.DragDrop += new System.Windows.Forms.DragEventHandler(this.logsListView_DragDrop);
             this.logsListView.DragEnter += new System.Windows.Forms.DragEventHandler(this.logsListView_DragEnter);
             this.logsListView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.logsListView_KeyDown);
@@ -468,10 +486,66 @@
             this.messagesTextBox.TabIndex = 0;
             this.messagesTextBox.WordWrap = false;
             // 
-            // mainStripStatusLabel
+            // logsContextMenuStrip
             // 
-            this.mainStripStatusLabel.Name = "mainStripStatusLabel";
-            this.mainStripStatusLabel.Size = new System.Drawing.Size(0, 17);
+            this.logsContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addLocalLogsContextToolStripMenuItem,
+            this.addLogsFromSFTPContextToolStripMenuItem,
+            this.toolStripMenuItem11,
+            this.removeSelectedContextToolStripMenuItem,
+            this.clearLogsContextToolStripMenuItem,
+            this.toolStripMenuItem12,
+            this.logPropertiesContextToolStripMenuItem});
+            this.logsContextMenuStrip.Name = "logsContextMenuStrip";
+            this.logsContextMenuStrip.Size = new System.Drawing.Size(164, 148);
+            // 
+            // addLocalLogsContextToolStripMenuItem
+            // 
+            this.addLocalLogsContextToolStripMenuItem.Name = "addLocalLogsContextToolStripMenuItem";
+            this.addLocalLogsContextToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.addLocalLogsContextToolStripMenuItem.Text = "Add &local...";
+            this.addLocalLogsContextToolStripMenuItem.Click += new System.EventHandler(this.addLocalLogsContextToolStripMenuItem_Click);
+            // 
+            // addLogsFromSFTPContextToolStripMenuItem
+            // 
+            this.addLogsFromSFTPContextToolStripMenuItem.Name = "addLogsFromSFTPContextToolStripMenuItem";
+            this.addLogsFromSFTPContextToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.addLogsFromSFTPContextToolStripMenuItem.Text = "Add from &sFTP...";
+            this.addLogsFromSFTPContextToolStripMenuItem.Click += new System.EventHandler(this.addLogsFromSFTPContextToolStripMenuItem_Click);
+            // 
+            // removeSelectedContextToolStripMenuItem
+            // 
+            this.removeSelectedContextToolStripMenuItem.Enabled = false;
+            this.removeSelectedContextToolStripMenuItem.Name = "removeSelectedContextToolStripMenuItem";
+            this.removeSelectedContextToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.removeSelectedContextToolStripMenuItem.Text = "&Remove selected";
+            this.removeSelectedContextToolStripMenuItem.Click += new System.EventHandler(this.removeSelectedContextToolStripMenuItem_Click);
+            // 
+            // clearLogsContextToolStripMenuItem
+            // 
+            this.clearLogsContextToolStripMenuItem.Enabled = false;
+            this.clearLogsContextToolStripMenuItem.Name = "clearLogsContextToolStripMenuItem";
+            this.clearLogsContextToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.clearLogsContextToolStripMenuItem.Text = "&Clear";
+            this.clearLogsContextToolStripMenuItem.Click += new System.EventHandler(this.clearLogsContextToolStripMenuItem_Click);
+            // 
+            // logPropertiesContextToolStripMenuItem
+            // 
+            this.logPropertiesContextToolStripMenuItem.Enabled = false;
+            this.logPropertiesContextToolStripMenuItem.Name = "logPropertiesContextToolStripMenuItem";
+            this.logPropertiesContextToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.logPropertiesContextToolStripMenuItem.Text = "&Properties...";
+            this.logPropertiesContextToolStripMenuItem.Click += new System.EventHandler(this.logPropertiesContextToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem11
+            // 
+            this.toolStripMenuItem11.Name = "toolStripMenuItem11";
+            this.toolStripMenuItem11.Size = new System.Drawing.Size(160, 6);
+            // 
+            // toolStripMenuItem12
+            // 
+            this.toolStripMenuItem12.Name = "toolStripMenuItem12";
+            this.toolStripMenuItem12.Size = new System.Drawing.Size(160, 6);
             // 
             // MainForm
             // 
@@ -497,6 +571,7 @@
             this.mainSplitContainer.ResumeLayout(false);
             this.messagesPanel.ResumeLayout(false);
             this.messagesPanel.PerformLayout();
+            this.logsContextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -550,6 +625,14 @@
         private System.Windows.Forms.Panel messagesPanel;
         private System.Windows.Forms.TextBox messagesTextBox;
         private System.Windows.Forms.ToolStripStatusLabel mainStripStatusLabel;
+        private System.Windows.Forms.ContextMenuStrip logsContextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem addLocalLogsContextToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addLogsFromSFTPContextToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem11;
+        private System.Windows.Forms.ToolStripMenuItem removeSelectedContextToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearLogsContextToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem12;
+        private System.Windows.Forms.ToolStripMenuItem logPropertiesContextToolStripMenuItem;
     }
 }
 
