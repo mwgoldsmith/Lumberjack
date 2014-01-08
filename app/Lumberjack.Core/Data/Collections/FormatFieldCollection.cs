@@ -56,6 +56,24 @@ namespace Medidata.Lumberjack.Core.Data.Collections
 
             return items;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sessionField"></param>
+        /// <returns></returns>
+        public IEnumerable<FormatField> Find(SessionField sessionField) {
+            var items = new List<FormatField>();
+
+            lock (_locker) {
+                for (var i = 0; i < _items.Count; i++) {
+                    if (ReferenceEquals(sessionField, _items[i].SessionField)) {
+                        items.Add(_items[i]);
+                    }
+                }
+            }
+
+            return items;
+        }
 
         /// <summary>
         /// 

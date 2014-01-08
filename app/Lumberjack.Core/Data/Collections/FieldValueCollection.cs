@@ -51,7 +51,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="container"></param>
+        /// <param name="container">The object the value is related to. (ex: LogFile, Entry)</param>
         /// <param name="formatField"></param>
         /// <returns></returns>
         public object Find(IFieldValueContainer container, FormatField formatField) {

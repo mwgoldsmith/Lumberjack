@@ -63,3 +63,8 @@ Ability to use EDIT mode must be disabled if any of the following editors are in
    - Format Fields
    - RegEx (sub-editor for Formats)
      
+	 75
+	 266
+
+	 103
+	 238

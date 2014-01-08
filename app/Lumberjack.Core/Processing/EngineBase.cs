@@ -211,6 +211,11 @@ namespace Medidata.Lumberjack.Core.Processing
                 string value = null;
 
                 var groups = field.Groups;
+                if (groups == null) {
+                    // If there are no groups defined, the field is permitted as a FormatField but
+                    // cannot be derived by parsing data in this (or possibly any) context
+                    continue;
+                }
 
                 // Take the first capture which was successful
                 for (var i = 0; i < groups.Length; i++) {

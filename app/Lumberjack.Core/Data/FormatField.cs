@@ -16,7 +16,6 @@ namespace Medidata.Lumberjack.Core.Data
 
         // Saving reference to objects from which the values of this FormatField
         // were derived. Not sure if will be needed later, but keeping them for now
-        private readonly SessionField _sessionField;
         private readonly FormatFieldElement _formatFieldElement;
 
         #endregion
@@ -41,7 +40,7 @@ namespace Medidata.Lumberjack.Core.Data
                 throw new ArgumentNullException("sessionField");
             }
 
-            _sessionField = sessionField;
+            SessionField = sessionField;
             _formatFieldElement = formatFieldElement;
             
             Id = id;
@@ -80,6 +79,11 @@ namespace Medidata.Lumberjack.Core.Data
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// The SessionField object which the FormatField refers to
+        /// </summary>
+        public SessionField SessionField { get; private set; }
 
         /// <summary>
         /// 

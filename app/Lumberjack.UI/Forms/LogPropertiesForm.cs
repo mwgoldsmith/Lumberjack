@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Medidata.Lumberjack.Core;
 using Medidata.Lumberjack.Core.Data;
 using Medidata.Lumberjack.Core.Data.Collections;
+using Medidata.Lumberjack.Core.Processing;
 
 namespace Medidata.Lumberjack.UI
 {
@@ -48,12 +49,10 @@ namespace Medidata.Lumberjack.UI
 
         #region Private fields
 
-        private readonly object[] _singleProperties = new object[]
+        private readonly object[] _standardProperties = new object[]
             {
-                "Id",
                 "Full Filename",
                 "Filesize",
-                "MD5 Hash",
                 "Session Format",
                 "Hashing Status",
                 "Filename Parsing Status",
@@ -61,19 +60,17 @@ namespace Medidata.Lumberjack.UI
                 "Entry Statistics"
             };
 
-        private readonly object[] _multiProperties = new object[]
+        private readonly object[] _singleProperties = new object[]
             {
-                "Filesize",
-                "Session Format",
-                "Hashing Status",
-                "Filename Parsing Status",
-                "Entry Parsing Status",
-                "Entry Statistics"
+                "ID",
+                "MD5 Hash"
             };
 
         private readonly LogFile[] _logFiles;
         private readonly UserSession _session;
 
+        private readonly Dictionary<SessionFormat, List<FormatField>> _sessionFormats = new Dictionary<SessionFormat, List<FormatField>>();
+        private readonly List<SessionField> _sessionFields = new List<SessionField>();
 
         #endregion
 
@@ -86,8 +83,35 @@ namespace Medidata.Lumberjack.UI
         /// <param name="logFiles"></param>
         public LogPropertiesForm(UserSession session, LogFile[] logFiles) {
             InitializeComponent();
+
             _logFiles = logFiles;
             _session = session;
+
+            // Determine all Session and Format Fields within the LogFiles
+            foreach (var l in _logFiles) {
+                var sessionFormat = l.SessionFormat;
+
+                // If SessionFormat is not known, the fields are not known either 
+                if (sessionFormat == null)
+                    continue;
+
+                // Only FormatFields within the Filename context are relevant
+                var items = sessionFormat.Contexts[FormatContextEnum.Filename].Fields.ToList();
+                List<FormatField> formatFields;
+
+                if (!_sessionFormats.TryGetValue(sessionFormat, out formatFields)) {
+                    formatFields = new List<FormatField>();
+                    _sessionFormats.Add(sessionFormat, formatFields);
+                }
+
+                foreach (var f in items) {
+                    if (!_sessionFields.Contains(f.SessionField))
+                        _sessionFields.Add(f.SessionField);
+
+                    if (!formatFields.Contains(f))
+                        formatFields.Add(f);
+                }
+            }
         }
 
         #endregion
@@ -100,26 +124,33 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void LogPropertiesForm_Load(object sender, EventArgs e) {
-            // Add standard log properties to list box
+            // Add properties to list box
             if (_logFiles.Length == 1) {
                 logFileTextBox.Text = _logFiles[0].Filename;
                 logPropertyListBox.Items.AddRange(_singleProperties);
             } else {
                 logFileTextBox.Text = _logFiles.Length + " file(s)";
-                logPropertyListBox.Items.AddRange(_multiProperties);
             }
 
-            // Add log fields
-            var formatFieldList = new List<FormatField>();
-            foreach (var l in _logFiles) {
-                var curFormatFieldCol = l.SessionFormat.Contexts[FormatContextEnum.Filename].Fields;
-                var curFormatFields = new FormatField[curFormatFieldCol.Count];
-                curFormatFieldCol.CopyTo(curFormatFields, 0);
-                formatFieldList.AddRange(curFormatFields);
+            logPropertyListBox.Items.AddRange(_standardProperties);
+            
+            // Add all SessionFields within the LogFiles
+            sessionFieldListBox.DataSource = _sessionFields;
+            sessionFieldListBox.DisplayMember = "Display";
+            
+            // Add all FormatFields
+            var treeNodes = new List<TreeNode>();
+            foreach (var s in _sessionFormats) {
+                var childNodes = s.Value.Select(formatField => new TreeNode(formatField.Name)).ToArray();
+                treeNodes.Add(new TreeNode(s.Key.Name, childNodes));
             }
 
+            formatFieldTreeView.Nodes.AddRange(treeNodes.ToArray());
+            formatFieldTreeView.ExpandAll();
+
+            // Select first property and default field level
             logPropertyListBox.SelectedIndices.Add(0);
-
+            fieldLevelComboBox.SelectedIndex = 0;
         }
 
         #endregion
@@ -140,68 +171,170 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void editButton_Click(object sender, EventArgs e) {
+            editPanel.Height = 65;
+            logValueTextBox.Top = editPanel.Bottom + editPanel.Margin.Top + editPanel.Margin.Bottom;
+            logValueTextBox.Height -= 28;
+
+            logPropertyListBox.Enabled = false;
+            fieldLevelComboBox.Enabled = false;
+            sessionFieldListBox.Enabled = false;
+            formatFieldTreeView.Enabled = false;
+            editButton.Enabled = false;
+            valueTextBox.ReadOnly = false;
+            valueComboBox.Enabled = true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void saveButton_Click(object sender, EventArgs e) {
+            // TODO: Save
+            cancelButton.PerformClick();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void cancelButton_Click(object sender, EventArgs e) {
+            editPanel.Height = 37;
+            logValueTextBox.Top = editPanel.Bottom + editPanel.Margin.Top + editPanel.Margin.Bottom;
+            logValueTextBox.Height += 28;
+
+            logPropertyListBox.Enabled = true;
+            fieldLevelComboBox.Enabled = true;
+            sessionFieldListBox.Enabled = true;
+            formatFieldTreeView.Enabled = true;
+            saveButton.Enabled = false;
+            editButton.Enabled = true;
+            valueTextBox.ReadOnly = true;
+            valueComboBox.Enabled = false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void logPropertyListBox_SelectedIndexChanged(object sender, EventArgs e) {
             var selected = logPropertyListBox.SelectedItem.ToString();
-            var text = "";
+            var detailText = "";
+            string textValue = null;
+            var editable = false;
 
             switch (selected) {
-                case "Id":
+                case "ID":
                     if (_logFiles.Length == 1)
-                        text = _logFiles[0].Id.ToString();
-
-                    break;
-                case "Filesize":
-                    text = _logFiles.Sum(l => l.Filesize) + " byte(s)";
-                    break;
-                case "Full Filename":
-                    if (_logFiles.Length == 1)
-                        text = _logFiles[0].FullFilename;
+                        textValue = _logFiles[0].Id.ToString();
 
                     break;
                 case "MD5 Hash":
                     if (_logFiles.Length == 1)
-                        text = _logFiles[0].Md5Hash;
+                        textValue = _logFiles[0].Md5Hash;
 
                     break;
-                case "Session Format":
-                    if (_logFiles.Length == 1) {
-                        var sessionFormat = _logFiles[0].SessionFormat;
-                        text = String.Format(
-                            "Id:               {0}" + Environment.NewLine +
-                            "Name:             {1}" + Environment.NewLine +
-                            "Reference:        {2}" + Environment.NewLine +
-                            "Timestamp Format: {3}" + Environment.NewLine + 
-                            "Contexts:" + Environment.NewLine,
-                            sessionFormat.Id,
-                            sessionFormat.Name,
-                            sessionFormat.Reference,
-                            sessionFormat.TimestampFormat);
 
-                        var contextText = GetContextText(sessionFormat.Contexts, FormatContextEnum.Filename, 2);
-                        if (contextText != null)
-                            text += contextText;
-                        contextText = GetContextText(sessionFormat.Contexts, FormatContextEnum.Entry, 2);
-                        if (contextText != null)
-                            text += contextText;
-                        contextText = GetContextText(sessionFormat.Contexts, FormatContextEnum.Content, 2);
-                        if (contextText != null)
-                            text += contextText;
+                case "Filesize":
+                    textValue = _logFiles.Sum(l => l.Filesize) + " byte(s)";
+                    break;
+
+                case "Full Filename":
+                    if (_logFiles.Length == 1) {
+                        editable = true;
+                        textValue = _logFiles[0].FullFilename;
                     } else {
-                        text = GetAggregateProperty(v => v.SessionFormat, n => n.Name);
+                        var sb = new StringBuilder();
+                        foreach (var l in _logFiles)
+                            sb.Append(l.FullFilename + Environment.NewLine);
+
+                        detailText = sb.ToString();
                     }
 
                     break;
+                case "Session Format":
+                    valueComboBox.SuspendLayout();
+                    foreach (var s in _session.Formats)
+                        valueComboBox.Items.Add(s.Name);
+
+                    valueComboBox.ResumeLayout(true);
+
+                    if (_logFiles.Length == 1) {
+                        var sessionFormat = _logFiles[0].SessionFormat;
+
+                        // For now, the session format is only editable if it is underdermined
+                        editable = sessionFormat == null;
+
+                        if (sessionFormat == null) {
+                            valueComboBox.Text = "(unknown)";
+                        } else {
+                            detailText = String.Format(
+                                "Id:               {0}" + Environment.NewLine +
+                                "Name:             {1}" + Environment.NewLine +
+                                "Reference:        {2}" + Environment.NewLine +
+                                "Timestamp Format: {3}" + Environment.NewLine +
+                                "Contexts:" + Environment.NewLine,
+                                sessionFormat.Id,
+                                sessionFormat.Name,
+                                sessionFormat.Reference,
+                                sessionFormat.TimestampFormat);
+
+                            var contextText = GetContextText(sessionFormat.Contexts, FormatContextEnum.Filename, 2);
+                            if (contextText != null)
+                                detailText += contextText;
+                            contextText = GetContextText(sessionFormat.Contexts, FormatContextEnum.Entry, 2);
+                            if (contextText != null)
+                                detailText += contextText;
+                            contextText = GetContextText(sessionFormat.Contexts, FormatContextEnum.Content, 2);
+                            if (contextText != null)
+                                detailText += contextText;
+
+                            valueComboBox.SelectedItem = sessionFormat.Name;
+                        }
+                    } else {
+                        detailText = GetAggregateProperty(v => v.SessionFormat, n => n.Name);
+                        valueComboBox.Text = "(multiple)";
+                    }
+
+
+                    break;
                 case "Hashing Status":
-                    text = GetAggregateProperty(v => v.HashStatus, n => n.ToString());
+                    PopulateEngineStatusCombo(valueComboBox);
+                    if (_logFiles.Length == 1) {
+                        valueComboBox.SelectedItem = _logFiles[0].HashStatus.ToString();
+                    } else {
+                        detailText = GetAggregateProperty(v => v.HashStatus, n => n.ToString());
+                    }
+
+                    editable = true;
+
                     break;
                 case "Filename Parsing Status":
-                    text = GetAggregateProperty(v => v.FilenameParseStatus, n => n.ToString());
+                    PopulateEngineStatusCombo(valueComboBox);
+                    if (_logFiles.Length == 1) {
+                        valueComboBox.SelectedItem = _logFiles[0].FilenameParseStatus.ToString();
+                    } else {
+                        detailText = GetAggregateProperty(v => v.FilenameParseStatus, n => n.ToString());
+                    }
+
+                    editable = true;
+
                     break;
                 case "Entry Parsing Status":
-                    text = GetAggregateProperty(v => v.EntryParseStatus, n => n.ToString());
+                    PopulateEngineStatusCombo(valueComboBox);
+                    if (_logFiles.Length == 1) {
+                        valueComboBox.SelectedItem = _logFiles[0].EntryParseStatus.ToString();
+                    } else {
+                        detailText = GetAggregateProperty(v => v.EntryParseStatus, n => n.ToString());
+                    }
+
+                    editable = true;
                     break;
                 case "Entry Statistics":
-                    text = String.Format(
+                    detailText = String.Format(
                         "TRACE:         {0}" + Environment.NewLine +
                         "DEBUG:         {1}" + Environment.NewLine +
                         "INFO:          {2}" + Environment.NewLine +
@@ -220,11 +353,66 @@ namespace Medidata.Lumberjack.UI
                         _logFiles.Sum(l => l.EntryStats.TotalEntries),
                         _logFiles.Min(l => l.EntryStats.FirstEntry),
                         _logFiles.Max(l => l.EntryStats.LastEntry));
-                    
+
                     break;
             }
 
-            logValueTextBox.Text = text;
+            editButton.Enabled = editable;
+
+            valueTextBox.Visible = (textValue != null);
+            valueComboBox.Visible = (textValue == null);
+
+            logValueTextBox.Text = detailText;
+            if (textValue != null)
+                valueTextBox.Text = textValue;
+            else {
+                
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void fieldLevelComboBox_SelectedValueChanged(object sender, EventArgs e) {
+            var control = (ComboBox)sender;
+            var sessionLevel = control.SelectedItem.ToString().Equals("Session Level");
+
+            sessionFieldListBox.Visible = sessionLevel;
+            formatFieldTreeView.Visible = !sessionLevel;
+
+            // if (sessionLevel)
+            //     sessionFieldListBox.SelectedIndex = 0;
+            // else 
+            //     formatFieldTreeView.se?
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void sessionFieldListBox_SelectedIndexChanged(object sender, EventArgs e) {
+            var control = (ListBox) sender;
+            var sessionField = control.SelectedItem as SessionField;
+            var detailText = GetSessionFieldText(sessionField, GetPadding(2));
+
+
+            if (_logFiles.Length == 1) {
+                valueTextBox.Text  = _session.FieldValues.Find(_logFiles[0], _logFiles[0].SessionFormat.Contexts[FormatContextEnum.Filename].Fields.Find(sessionField).ToArray()[0]).ToString();
+            } else {
+                
+            }
+
+            valueTextBox.Visible = true;
+            valueComboBox.Visible = false;
+
+            logValueTextBox.Text = detailText;
+        }
+
+        private void formatFieldTreeView_LocationChanged(object sender, EventArgs e) {
+
         }
 
         #endregion
@@ -261,6 +449,47 @@ namespace Medidata.Lumberjack.UI
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="sessionField"></param>
+        /// <param name="padding"></param>
+        /// <returns></returns>
+        private static string GetSessionFieldText(SessionField sessionField, string padding) {
+            var contexts = "";
+
+            if (sessionField.ContextFlags == FieldContextFlags.None) {
+                contexts = contexts + padding + "(none)";
+            } else {
+                var values = Enum.GetValues(typeof (FieldContextFlags));
+
+                foreach (int e in values) {
+                    if (e != 0 && ((int) sessionField.ContextFlags & e) == e) 
+                        contexts = contexts + padding + Enum.ToObject(typeof (FieldContextFlags), e) + Environment.NewLine;
+                }
+            }
+
+            return String.Format(
+                    "Id:              {0}" + Environment.NewLine +
+                    "Name:            {1}" + Environment.NewLine +
+                    "Display:         {2}" + Environment.NewLine +
+                    "Data Type:       {3}" + Environment.NewLine +
+                    "Required:        {4}" + Environment.NewLine +
+                    "Default:         {5}" + Environment.NewLine +
+                    "Filterable:      {6}" + Environment.NewLine +
+                    "Format Pattern:  {7}" + Environment.NewLine +
+                    "Contexts:        " + Environment.NewLine + "{8}",
+                    sessionField.Id,
+                    sessionField.Name,
+                    sessionField.Display,
+                    sessionField.DataType,
+                    sessionField.Required,
+                    sessionField.Default,
+                    sessionField.Filterable,
+                    sessionField.FormatPattern,
+                    contexts);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="formatFields"></param>
         /// <param name="padding"></param>
         /// <returns></returns>
@@ -270,7 +499,9 @@ namespace Medidata.Lumberjack.UI
 
             for (var i = 0; i < len; i++) {
                 var formatField = formatFields[i];
-
+                if (formatField == null) {
+                    var x = formatField;
+                }
                 sb.AppendFormat(
                     "{0}[{1}]  Id:              {2}" + Environment.NewLine +
                     "{0}     Name:            {3}" + Environment.NewLine +
@@ -291,7 +522,7 @@ namespace Medidata.Lumberjack.UI
                     formatField.Default,
                     formatField.Filterable,
                     formatField.FormatPattern,
-                    String.Join(", ", formatField.Groups));
+                    formatField.Groups == null ? "" : String.Join(", ", formatField.Groups));
             }
 
             return sb.ToString();
@@ -347,10 +578,20 @@ namespace Medidata.Lumberjack.UI
             return sb.ToString();
         }
         
-        #endregion
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="control"></param>
+        private static void PopulateEngineStatusCombo(ComboBox control) {
+            control.SuspendLayout();
 
-        private void editButton_Click(object sender, EventArgs e) {
+            control.Items.Clear();
+            foreach (var s in Enum.GetNames(typeof (EngineStatusEnum)))
+                control.Items.Add(s);
 
+            control.ResumeLayout(true);
         }
+
+        #endregion
     }
 }
