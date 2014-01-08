@@ -203,11 +203,9 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void clearLogsToolStripMenuItem_Click(object sender, EventArgs e) {
-            var control = (ListView) sender;
+            RemoveLogFiles(logsListView, logsListView.Items);
 
-            RemoveLogFiles(control, logsListView.Items);
-
-            control.SelectedItems.Clear();
+            logsListView.SelectedItems.Clear();
         }
 
         /// <summary>
