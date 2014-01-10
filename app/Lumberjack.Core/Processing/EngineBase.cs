@@ -203,7 +203,7 @@ namespace Medidata.Lumberjack.Core.Processing
 
                 var msg = String.Format("Entering. Args: {{ logFile = {0}, container = {1}, contextFormat = {2}, match = {3} (chars) }}", log, containerStr, contextFormat, match.Length);
 
-                //_logger.Trace("EB-PFF-001", msg);
+                _logger.Trace("EB-PFF-001", msg);
             }
 
             // Iterate over each field the format can contain within the filename
@@ -239,6 +239,9 @@ namespace Medidata.Lumberjack.Core.Processing
                         return false;
                     }
                 } else {
+                    if (field.Name.ToUpper().Equals("TIMESTAMP")) {
+                        var x = value;
+                    }
                     // Check if field was not found but has default value
                     if (value == null && field.Default != null) {
                         value = field.Default;
@@ -246,10 +249,10 @@ namespace Medidata.Lumberjack.Core.Processing
 
                     if (value != null) {
                         if (Logger.IsTraceEnabled) {
-                           // if (field.Name == "MESSAGE")
-                           //     _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = " + value.Length + " characters (len)");
-                           // else
-                           //     _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = '" + value + "'");
+                            if (field.Name == "MESSAGE")
+                                _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = " + value.Length + " characters (len)");
+                            else
+                                _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = '" + value + "'");
                         }
 
                         if (field.Name.Equals("LEVEL")) {
@@ -275,10 +278,11 @@ namespace Medidata.Lumberjack.Core.Processing
                             }    
                         }
 
-                        
-                        if (field.Filterable && !SetRawFieldValue(container, field, value)) {
-                            OnError("Failed to set field '" + field.Name + "' to value '" + value + "'");
-                            return false;
+
+                        if (field.Filterable) {
+                            SessionInstance.FieldValues.Add(container, field, value);
+                           // OnError("Failed to set field '" + field.Name + "' to value '" + value + "'");
+                           // return false;
                         }
                     }
                 }
@@ -397,34 +401,6 @@ namespace Medidata.Lumberjack.Core.Processing
 
             if (Logger.IsTraceEnabled)
                 _logger.Trace("EB-ET-009", "Exiting " + Name);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="container"></param>
-        /// <param name="formatField"></param>
-        /// <param name="value"></param>
-        private bool SetRawFieldValue(IFieldValueContainer container, FormatField formatField, string value) {
-            if (formatField.DataType == FieldDataTypeEnum.DateTime) {
-                var dateValue = new DateTime();
-
-                if (!formatField.TryUnformatValue(value, ref dateValue))
-                    return false;
-
-                SessionInstance.FieldValues.Add(container, formatField, dateValue);
-            } else if (formatField.DataType == FieldDataTypeEnum.Integer) {
-                var intValue = 0;
-
-                if (!formatField.TryUnformatValue(value, ref intValue))
-                    return false;
-
-                SessionInstance.FieldValues.Add(container, formatField, intValue);
-            } else if (formatField.DataType == FieldDataTypeEnum.String) {
-                SessionInstance.FieldValues.Add(container, formatField, value);
-            }
-
-            return true;
         }
 
         /// <summary>

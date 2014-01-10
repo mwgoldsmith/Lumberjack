@@ -77,6 +77,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
             
             var containerId = container.Id;
             var formatFieldId = formatField.Id;
+
             for (var i = 0; i < _items.Count; i++) {
                 var item = _items[i];
                 if (item.ContainerId == containerId && item.FormatField.Id == formatFieldId) {
@@ -135,19 +136,61 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="container"></param>
         /// <param name="formatField"></param>
         /// <param name="value"></param>
-        public void Add<T>(IFieldValueContainer container, FormatField formatField, T value) {
-            if (GetFormatFieldType(formatField.DataType) != typeof(T))
-                throw new ArgumentException("Cannot add " + typeof(T) + " value for field '" + formatField.Name + "': data type is '" + formatField.DataType + "'");
+        public void Add<T>(IFieldValueContainer container, FormatField formatField, T value)  {
+            if (typeof(T) == typeof(string) && formatField.DataType != FieldDataTypeEnum.String) {
+                if (formatField.DataType == FieldDataTypeEnum.DateTime) {
+                    DateTime dateValue = new DateTime();
+
+                    if (!formatField.TryUnformatValue(value.ToString(), ref dateValue))
+                        return;
+
+                    Add(container, formatField, dateValue);
+                } else if (formatField.DataType == FieldDataTypeEnum.Integer) {
+                    Int32 intValue = 0;
+
+                    if (!formatField.TryUnformatValue(value.ToString(), ref intValue))
+                        return;
+
+                    Add(container, formatField, intValue);
+                }
+            } else {
+                lock (_locker) {
+                    var values = _values[formatField.DataType];
+
+                    var index = ((List<T>) values).IndexOf(value);
+
+                    if (index == -1) {
+                        index = values.Count;
+                        values.Add(value);
+                    }
+
+                    Add(new FieldValueLookup(container.Id, formatField, index));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="container"></param>
+        /// <param name="formatField"></param>
+        /// <param name="value"></param>
+        public void Update<T>(IFieldValueContainer container, FormatField formatField, T value) {
+            var containerId = container.Id;
+            var formatFieldId = formatField.Id;
 
             lock (_locker) {
-                var values = _values[formatField.DataType];
-                var index = ((List<T>)values).IndexOf(value);
-                if (index == -1) {
-                    index = values.Count;
-                    values.Add(value);
+                // Remove the field value lookup if it already exists
+                for (var i = 0; i < _items.Count; i++) {
+                    var item = _items[i];
+                    if (item.ContainerId == containerId && item.FormatField.Id == formatFieldId) {
+                        _items.Remove(_items[i]);
+                    }
                 }
 
-                base.Add(new FieldValueLookup(container.Id, formatField, index));
+                // Add the field value
+                Add(container, formatField, value);
             }
         }
 

@@ -24,8 +24,9 @@ namespace Medidata.Lumberjack.Core.Data
         /// 
         /// </summary>
         /// <param name="session"></param>
+        /// <param name="sessionFormat"></param>
         /// <param name="formatContextElement"></param>
-        public ContextFormat(UserSession session, FormatContextElement formatContextElement) {
+        public ContextFormat(UserSession session, SessionFormat sessionFormat, FormatContextElement formatContextElement) {
             var formatFields = session.FormatFields;
 
             _formatContextElement = formatContextElement;
@@ -38,7 +39,7 @@ namespace Medidata.Lumberjack.Core.Data
             var id = 0;
             foreach (var field in formatContextElement.Fields) {
                 var sessionField = session.SessionFields.Find(field.Name);
-                var formatField = new FormatField(field, sessionField, id++);
+                var formatField = new FormatField(sessionFormat, field, sessionField, id++);
 
                 formatFields.Add(formatField);
                 Fields.Add(formatField);

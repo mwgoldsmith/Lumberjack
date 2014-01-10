@@ -20,7 +20,7 @@
     <context name="entry" />
     <context name="content" />
   </field>
-  <field name="TIMESTAMP" display="Timestamp" required="true" dataType="datetime">
+  <field name="TIMESTAMP" display="Timestamp" required="true" filterable="true" dataType="datetime">
     <context name="entry" />
   </field>
   <field name="LEVEL" display="Level" required="true" filterable="true" dataType="string">
@@ -56,7 +56,7 @@
   <field name="MESSAGE" display="Message" required="false" dataType="string">
     <context name="content" />
   </field>
-  <field name="INSTANCEUUID" display="Instance UUID" required="false" dataType="string">
+  <field name="INSTANCEUUID" display="Instance UUID" required="false" filterable="true" dataType="string">
     <context name="content" />
   </field>
 </fields>

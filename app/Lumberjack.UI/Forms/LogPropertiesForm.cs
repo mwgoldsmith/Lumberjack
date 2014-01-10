@@ -52,7 +52,7 @@ namespace Medidata.Lumberjack.UI
         /// <summary>
         /// 
         /// </summary>
-        protected struct EngineStatusProperty
+        protected class EngineStatusProperty
         {
             #region Initializers
 
@@ -60,11 +60,10 @@ namespace Medidata.Lumberjack.UI
             /// 
             /// </summary>
             /// <param name="status"></param>
-            public EngineStatusProperty(EngineStatusEnum status)
-                : this() {
+            public EngineStatusProperty(EngineStatusEnum status) {
                 Status = status;
                 Name = status.ToString();
-                Value = (int)status;
+                Value = (int) status;
             }
 
             #endregion
@@ -178,6 +177,9 @@ namespace Medidata.Lumberjack.UI
         private readonly Dictionary<SessionFormat, List<ListItem>> _formatFieldItems;
 
         private bool _isFieldSelected;
+        private bool _isFormatLevelFields;
+        private ListItem _curListItem;
+        private bool _editMode;
 
         #endregion
 
@@ -250,13 +252,10 @@ namespace Medidata.Lumberjack.UI
             formatFieldTreeView.ExpandAll();
 
             // Select first property and default field level
-            logPropertyListBox.SelectedIndices.Add(0);
             fieldLevelComboBox.SelectedIndex = 0;
+            logPropertyListBox.SelectedIndices.Add(0);
 
-            // Set focus to the log property listbox control, and blue the field controls
-            _isFieldSelected = false;
-            sessionFieldListBox.Refresh();
-            logPropertyListBox.Refresh();
+            SelectDataItem(logPropertyListBox.SelectedItem as ListItem, false);
         }
 
         #endregion
@@ -290,6 +289,8 @@ namespace Medidata.Lumberjack.UI
             valueTextBox.ReadOnly = false;
             valueComboBox.Enabled = true;
             valueComboBox.DropDownStyle =_isFieldSelected ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
+
+            _editMode = true;
         }
 
         /// <summary>
@@ -298,6 +299,60 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void saveButton_Click(object sender, EventArgs e) {
+            var value = _curListItem.ComboDataSource == null ? valueTextBox.Text : valueComboBox.Text;
+            var result = MessageBox.Show("Are you sure you want to set the value of " + _curListItem.Name + " to \"" + value + "\" for the selected log file(s)?", 
+                "Confirm change",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.No) 
+                return;
+
+            if (_isFieldSelected) {
+                // Update the modified field value for the referenced LogFile objects
+
+                FormatField formatField = null;
+                SessionField sessionField = null;
+
+                if (_isFormatLevelFields) {
+                    formatField = _curListItem.Data as FormatField;
+                } else {
+                    sessionField = _curListItem.Data as SessionField;
+                }
+
+                foreach (var logFile in _logFiles) {
+                    // When the change is being applied at a session field level, we would need to find the
+                    // linked format field for each logfile.
+                    if (sessionField != null)
+                        formatField = logFile.SessionFormat.Contexts[FormatContextEnum.Filename].Fields.FindFirst(sessionField);
+
+                    if (formatField == null) {
+                        // TODO: this log does not contains a format field linked to the selected session field. Notify user
+                    } else {
+                        // Add value if non-existant; else, update
+                        _session.FieldValues.Update(logFile, formatField, value);
+                    }
+                }
+            } else {
+                // Update the log file property for the referenced LogFile objects
+                var logFiles = new List<LogFile>(_logFiles);
+
+                switch (_curListItem.Name) {
+                    case "Full Filename":
+                        break;
+                    case "Session Format":
+                        var sessionFormat = valueComboBox.SelectedItem as SessionFormat;
+                        logFiles.ForEach(x => x.SessionFormat = sessionFormat);
+                        break;
+                    case "Hashing Status":
+                        break;
+                    case "Filename Parsing Status":
+                        break;
+                    case "Entry Parsing Status":
+                        break;
+                }
+            }
+
             // TODO: Save
             cancelButton.PerformClick();
         }
@@ -321,6 +376,9 @@ namespace Medidata.Lumberjack.UI
             valueTextBox.ReadOnly = true;
             valueComboBox.Enabled = false;
             valueComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            valueComboBox.SelectedItem = _curListItem.Value;
+
+            _editMode = false;
         }
 
         #endregion
@@ -333,9 +391,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void logPropertyListBox_SelectedIndexChanged(object sender, EventArgs e) {
-            var control = (ListBox)sender;
-
-            SelectDataItem(control.SelectedItem as ListItem, false);
+            SelectDataItem(((ListBox)sender).SelectedItem as ListItem, false);
         }
 
         /// <summary>
@@ -354,15 +410,10 @@ namespace Medidata.Lumberjack.UI
         /// <param name="e"></param>
         private void fieldLevelComboBox_SelectedValueChanged(object sender, EventArgs e) {
             var control = (ComboBox)sender;
-            var sessionLevel = control.SelectedItem.ToString().Equals("Session Level");
+            _isFormatLevelFields = control.SelectedItem.ToString().Equals("Format Level");
 
-            sessionFieldListBox.Visible = sessionLevel;
-            formatFieldTreeView.Visible = !sessionLevel;
-
-            // if (sessionLevel)
-            //     sessionFieldListBox.SelectedIndex = 0;
-            // else 
-            //     formatFieldTreeView.se?
+            sessionFieldListBox.Visible = !_isFormatLevelFields;
+            formatFieldTreeView.Visible = _isFormatLevelFields;
         }
 
         /// <summary>
@@ -371,9 +422,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void sessionFieldListBox_SelectedIndexChanged(object sender, EventArgs e) {
-            var control = (ListBox) sender;
-
-            SelectDataItem(control.SelectedItem as ListItem, true);
+            SelectDataItem(((ListBox) sender).SelectedItem as ListItem, true);
         }
 
         /// <summary>
@@ -409,7 +458,18 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void valueComboBox_SelectedValueChanged(object sender, EventArgs e) {
+            var selected = valueComboBox.SelectedItem;
 
+            if (!_isFieldSelected && valueComboBox.DataSource != null && String.IsNullOrWhiteSpace(valueComboBox.DisplayMember))
+                return;
+
+            var modified = _curListItem == null
+                            || (_curListItem.Value == null && selected != null)
+                            || (_isFieldSelected
+                                    ? !Equals(_curListItem.Value, selected)
+                                    : !ReferenceEquals(_curListItem.Value, selected));
+
+            saveButton.Enabled = modified;
         }
 
         /// <summary>
@@ -418,7 +478,19 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void valueComboBox_TextChanged(object sender, EventArgs e) {
+            var text = valueComboBox.Text;
+            var modified = false;
 
+            if (_curListItem != null && _curListItem.Value == null) {
+                modified = !string.IsNullOrEmpty(text);
+            } else if (_curListItem != null) {
+                if (_isFieldSelected)
+                    modified = !Equals(_curListItem.Value, text);
+                else
+                    modified = !ReferenceEquals(_curListItem.Value, text);
+            }
+
+            saveButton.Enabled = modified;
         }
 
         #endregion
@@ -466,9 +538,11 @@ namespace Medidata.Lumberjack.UI
         private void SelectDataItem(ListItem selected, bool fieldSelected) {
             var textOnly = selected == null || selected.ComboDataSource == null;
             var logValueText = selected == null ? "" : selected.Details;
-            var valueText = selected == null || !textOnly ? "" : selected.Value.ToString();
+            var valueText = selected == null || (!textOnly || selected.Value == null) ? "" : selected.Value.ToString();
 
             _isFieldSelected = fieldSelected;
+            _curListItem = selected;
+
             sessionFieldListBox.Refresh();
             logPropertyListBox.Refresh();
 
@@ -479,16 +553,18 @@ namespace Medidata.Lumberjack.UI
             valueTextBox.Text = valueText;
             valueTextBox.Visible = textOnly;
 
-            valueComboBox.Visible = !textOnly;
-
             if (textOnly) {
                 valueComboBox.DataSource = null;
                 valueComboBox.DisplayMember = null;
             } else {
+                valueComboBox.SelectedItem = null;
                 valueComboBox.DataSource = selected.ComboDataSource;
                 valueComboBox.DisplayMember = selected.ComboDisplayMember;
                 valueComboBox.SelectedItem = selected.Value;
             }
+
+            valueComboBox.Visible = !textOnly;
+            valueComboBox.Enabled = _editMode;
         }
 
         /// <summary>
@@ -501,32 +577,12 @@ namespace Medidata.Lumberjack.UI
             var singleView = logFiles.Length == 1;
             var logFile = logFiles[0];
             Func<EngineStatusEnum, object> getEngineStatusDropdown = x =>
-                (object) _engineStatusProperties.Find(y => (EngineStatusEnum) y.Value == logFile.EntryParseStatus);
+                                                                     (object) _engineStatusProperties.Find(y => (EngineStatusEnum) y.Value == x);
 
             if (singleView) {
                 result.Add(new ListItem("ID", logFile.Id.ToString()));
                 result.Add(new ListItem("MD5 Hash", logFile.Md5Hash));
             }
-
-            var entryStats = String.Format(
-                "TRACE:         {0}" + Environment.NewLine +
-                "DEBUG:         {1}" + Environment.NewLine +
-                "INFO:          {2}" + Environment.NewLine +
-                "WARN:          {3}" + Environment.NewLine +
-                "ERROR:         {4}" + Environment.NewLine +
-                "FATAL:         {5}" + Environment.NewLine +
-                "Total Entries: {6}" + Environment.NewLine +
-                "First Entry:   {7}" + Environment.NewLine +
-                "Last Entry:    {8}",
-                _logFiles.Sum(l => l.EntryStats.Trace),
-                _logFiles.Sum(l => l.EntryStats.Debug),
-                _logFiles.Sum(l => l.EntryStats.Info),
-                _logFiles.Sum(l => l.EntryStats.Warn),
-                _logFiles.Sum(l => l.EntryStats.Error),
-                _logFiles.Sum(l => l.EntryStats.Fatal),
-                _logFiles.Sum(l => l.EntryStats.TotalEntries),
-                _logFiles.Min(l => l.EntryStats.FirstEntry),
-                _logFiles.Max(l => l.EntryStats.LastEntry));
 
             result.AddRange(new[]
                 {
@@ -536,29 +592,33 @@ namespace Medidata.Lumberjack.UI
                             Details = GetFullFilenamePropertyDetail(logFiles),
                             Readonly = !singleView
                         },
-                    new ListItem("Session Format", singleView ? logFile.SessionFormat : null)
+                    new ListItem("Session Format")
                         {
+                            Value = TestAllValuesSame(logFiles, v => v.SessionFormat == null ? -1 : v.SessionFormat.Id) ? logFile.SessionFormat : null,
                             Details = GetSessionFormatPropertyDetail(logFiles),
                             Readonly = !singleView || logFile.SessionFormat != null,
                             ComboDataSource = _session.Formats.ToList(),
                             ComboDisplayMember = "Name"
                         },
-                    new ListItem("Hashing Status", singleView ? getEngineStatusDropdown(logFile.HashStatus) : null)
+                    new ListItem("Hashing Status")
                         {
+                            Value = TestAllValuesSame(logFiles, v => (int) v.HashStatus) ? getEngineStatusDropdown(logFile.HashStatus) : null,
                             Details = singleView ? null : GetAggregateProperty(v => v.HashStatus, n => n.ToString()),
                             ComboDataSource = _engineStatusProperties,
                             ComboDisplayMember = "Name",
                             Readonly = false
                         },
-                    new ListItem("Filename Parsing Status", singleView ?getEngineStatusDropdown(logFile.FilenameParseStatus) : null)
+                    new ListItem("Filename Parsing Status")
                         {
+                            Value = TestAllValuesSame(logFiles, v => (int) v.FilenameParseStatus) ? getEngineStatusDropdown(logFile.FilenameParseStatus) : null,
                             Details = singleView ? null : GetAggregateProperty(v => v.FilenameParseStatus, n => n.ToString()),
                             ComboDataSource = _engineStatusProperties,
                             ComboDisplayMember = "Name",
                             Readonly = false
                         },
-                    new ListItem("Entry Parsing Status", singleView ? getEngineStatusDropdown(logFile.EntryParseStatus) : null)
+                    new ListItem("Entry Parsing Status")
                         {
+                            Value = TestAllValuesSame(logFiles, v => (int) v.EntryParseStatus) ? getEngineStatusDropdown(logFile.EntryParseStatus) : null,
                             Details = singleView ? null : GetAggregateProperty(v => v.EntryParseStatus, n => n.ToString()),
                             ComboDataSource = _engineStatusProperties,
                             ComboDisplayMember = "Name",
@@ -566,7 +626,7 @@ namespace Medidata.Lumberjack.UI
                         },
                     new ListItem("Entry Statistics")
                         {
-                            Details = entryStats
+                            Details = GetEntryStatsDetail(_logFiles)
                         }
                 });
 
@@ -579,7 +639,6 @@ namespace Medidata.Lumberjack.UI
         /// <param name="logFiles"></param>
         /// <returns></returns>
         private List<ListItem> CreateSessionFieldItems(LogFile[] logFiles) {
-            var singleView = logFiles.Length == 1;
             var result = new List<ListItem>();
 
             // Determine all Session and Format Fields within the LogFiles
@@ -598,39 +657,45 @@ namespace Medidata.Lumberjack.UI
                     if (result.Exists(x => ReferenceEquals(x.Data as SessionField, sessionField)))
                         continue;
 
+                    // Get the value of the field to be used for the ListItem
+                    // Only use the field value if every logfile which has a format field
+                    // linked to the same session field also has the same field value.
+                    var value = _session.FieldValues.Find(logFile, formatField);
+                    if (value == null || !TestAllFieldValues(logFiles, sessionField, value.ToString()))
+                        value = null;
+
                     result.Add(new ListItem(sessionField.Display)
-                    {
-                        Data = sessionField,
-                        Value = singleView ? _session.FieldValues.Find(logFile, formatField) : null,
-                        Details = GetSessionFieldText(sessionField, GetPadding(2)),
-                        ComboDataSource = _session.FieldValues.FindAll(sessionField).Distinct().ToList(),
-                        Readonly = false
-                    });
+                        {
+                            Data = sessionField,
+                            Value = value,
+                            Details = GetSessionFieldText(sessionField, new String(' ', 2)),
+                            ComboDataSource = _session.FieldValues.FindAll(sessionField).Distinct().ToList(),
+                            Readonly = false
+                        });
                 }
             }
 
             return result;
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="logFiles"></param>
         /// <returns></returns>
         private Dictionary<SessionFormat, List<ListItem>> CreateFormatFieldItems(LogFile[] logFiles) {
-            var singleView = logFiles.Length == 1;
             var result = new Dictionary<SessionFormat, List<ListItem>>();
 
             // Determine all Session and Format Fields within the LogFiles
-            foreach (var l in logFiles) {
-                var sessionFormat = l.SessionFormat;
+            foreach (var logFile in logFiles) {
+                var sessionFormat = logFile.SessionFormat;
 
                 // If SessionFormat is not known, the fields are not known either 
                 if (sessionFormat == null)
                     continue;
 
                 // Only FormatFields within the Filename context are relevant
-                var items = sessionFormat.Contexts[FormatContextEnum.Filename].Fields.ToList();
+                var items = sessionFormat.Contexts[FormatContextEnum.Filename].Fields;
                 List<ListItem> formatFields;
 
                 if (!result.TryGetValue(sessionFormat, out formatFields)) {
@@ -642,11 +707,18 @@ namespace Medidata.Lumberjack.UI
                     if (formatFields.Count > 0 && formatFields.Exists(x => ReferenceEquals(x.Data as FormatField, f)))
                         continue;
 
+                    // Get the value of the field to be used for the ListItem
+                    // Only use the field value if every logfile which has a format field
+                    // linked to the same session field also has the same field value.
+                    var value = _session.FieldValues.Find(logFile, f);
+                    if (value == null || !TestAllFieldValues(logFiles, f, value.ToString()))
+                        value = null;
+
                     formatFields.Add(new ListItem(f.Display)
                     {
                         Data = f,
-                        Value = singleView ? _session.FieldValues.Find(l, f) : null,
-                        Details = GetFormatFieldText(f), /** TEMP **/
+                        Value = value,
+                        Details = GetFormatFieldText(f),
                         ComboDataSource = _session.FieldValues.FindAll(f).Distinct().ToList(),
                         Readonly = false
                     });
@@ -655,6 +727,123 @@ namespace Medidata.Lumberjack.UI
 
             return result;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logFiles"></param>
+        /// <param name="sessionField"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private bool TestAllFieldValues(LogFile[] logFiles, SessionField sessionField, string value) {
+            for (var i = logFiles.Length - 1; i >= 0; i--) {
+                var logFile = logFiles[i];
+                var sessionFormat = logFile.SessionFormat;
+
+                if (sessionFormat == null)
+                    continue;
+
+                var f = sessionFormat.Contexts[FormatContextEnum.Filename].Fields;
+                var formatField = f.FindFirst(sessionField);
+                if (formatField == null)
+                    continue;
+
+                var fieldValue = _session.FieldValues.Find(logFile, formatField);
+                if (fieldValue == null || !value.Equals(fieldValue.ToString()))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logFiles"></param>
+        /// <param name="formatField"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private bool TestAllFieldValues(LogFile[] logFiles, FormatField formatField, string value) {
+            for (var i = logFiles.Length - 1; i >= 0; i--) {
+                var logFile = logFiles[i];
+                var sessionFormat = logFile.SessionFormat;
+
+                if (sessionFormat == null)
+                    continue;
+
+                if (!sessionFormat.Contexts[FormatContextEnum.Filename].Fields.Contains(formatField))
+                    continue;
+
+                var fieldValue = _session.FieldValues.Find(logFile, formatField);
+                if (fieldValue == null || !value.Equals(fieldValue.ToString()))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if a value is the same for all of the given LogFiles by calling the specified
+        /// predicate.
+        /// </summary>
+        /// <param name="logFiles">Array of LogFile objects to pass to the predicate.</param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private static bool TestAllValuesSame(LogFile[] logFiles, Func<LogFile, int> predicate) {
+            if (logFiles.Length == 1)
+                return true;
+
+            var value = predicate(logFiles[0]);
+
+            return logFiles.All(t => predicate(t) == value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="valueFunc"></param>
+        /// <param name="nameFunc"></param>
+        /// <returns></returns>
+        private string GetAggregateProperty<T>(Func<LogFile, T> valueFunc, Func<T, string> nameFunc) {
+            var len = _logFiles.Length;
+            if (len == 1)
+                return nameFunc(valueFunc(_logFiles[0]));
+
+            var counts = new Dictionary<T, AggregateProperty>();
+            var width = 10;
+
+            // Count the number of occurances of a property by value through all
+            // referenced LogFile objects
+            for (var i = 0; i < len; i++) {
+                var item = valueFunc(_logFiles[i]);
+                if (Equals(item, default(T)))
+                    continue;
+
+                var name = nameFunc(item);
+                AggregateProperty agg;
+
+                if (name.Length > width)
+                    width = name.Length;
+
+                if (counts.TryGetValue(item, out agg))
+                    counts[item] = new AggregateProperty(name, agg.Count + 1);
+                else
+                    counts.Add(item, new AggregateProperty(name, 1));
+            }
+
+            var sb = new StringBuilder();
+            var format = "{0,-" + width + "}: {1}{2}" + Environment.NewLine;
+
+            foreach (var value in counts.Values)
+                sb.AppendFormat(format, value.Name, value.Count, value.Count == 1 ? " log" : " logs");
+
+            return sb.ToString();
+        }
+
+        #endregion
+
+        #region Private methods for generating formatted detail text
 
         /// <summary>
         /// 
@@ -673,8 +862,32 @@ namespace Medidata.Lumberjack.UI
             return sb.ToString();
         }
 
-
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logFiles"></param>
+        /// <returns></returns>
+        private static string GetEntryStatsDetail(LogFile[] logFiles) {
+            return String.Format(
+                "TRACE:         {0}" + Environment.NewLine +
+                "DEBUG:         {1}" + Environment.NewLine +
+                "INFO:          {2}" + Environment.NewLine +
+                "WARN:          {3}" + Environment.NewLine +
+                "ERROR:         {4}" + Environment.NewLine +
+                "FATAL:         {5}" + Environment.NewLine +
+                "Total Entries: {6}" + Environment.NewLine +
+                "First Entry:   {7}" + Environment.NewLine +
+                "Last Entry:    {8}",
+                logFiles.Sum(l => l.EntryStats.Trace),
+                logFiles.Sum(l => l.EntryStats.Debug),
+                logFiles.Sum(l => l.EntryStats.Info),
+                logFiles.Sum(l => l.EntryStats.Warn),
+                logFiles.Sum(l => l.EntryStats.Error),
+                logFiles.Sum(l => l.EntryStats.Fatal),
+                logFiles.Sum(l => l.EntryStats.TotalEntries),
+                logFiles.Min(l => l.EntryStats.FirstEntry),
+                logFiles.Max(l => l.EntryStats.LastEntry));
+        }
 
         /// <summary>
         /// 
@@ -735,15 +948,15 @@ namespace Medidata.Lumberjack.UI
             if (context == null)
                 return null;
 
-            var padding = GetPadding(indentation*3);
+            var padding = new String (' ', indentation*3);
             return String.Format(
                 "{0}{3}" + Environment.NewLine +
                 "{1}Regex:" + Environment.NewLine +
                 "{2}{4}" + Environment.NewLine +
                 "{1}Fields:" + Environment.NewLine +
                 "{5}" + Environment.NewLine,
-                GetPadding(indentation),
-                GetPadding(indentation * 2),
+                new String (' ', indentation),
+                new String (' ', indentation * 2),
                 padding,
                 formatContextEnum,
                 context.Regex,
@@ -859,59 +1072,6 @@ namespace Medidata.Lumberjack.UI
             return sb.ToString();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="len"></param>
-        /// <returns></returns>
-        public static string GetPadding(int len) {
-            var chars = new string[len];
-            for (var i = 0; i < len; i++)
-                chars[i] = " ";
-
-            return String.Join("", chars);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="valueFunc"></param>
-        /// <param name="nameFunc"></param>
-        /// <returns></returns>
-        private string GetAggregateProperty<T>(Func<LogFile, T> valueFunc, Func<T, string> nameFunc)  {
-            if (_logFiles.Length == 1)
-                return nameFunc(valueFunc(_logFiles[0]));
-
-            var counts = new Dictionary<T, AggregateProperty>();
-            var width = 10;
-
-            for (var i = 0; i < _logFiles.Length; i++) {
-                var item = valueFunc(_logFiles[i]);
-                if (Equals(item, default(T)))
-                    continue;
-
-                var name = nameFunc(item);
-                AggregateProperty agg;
-
-                if (name.Length > width)
-                    width = name.Length;
-
-                if (counts.TryGetValue(item, out agg))
-                    counts[item] = new AggregateProperty(name, agg.Count + 1);
-                else
-                    counts.Add(item, new AggregateProperty(name, 1));
-            }
-
-            var sb = new StringBuilder();
-            var format = "{0,-" + width + "}: {1}{2}" + Environment.NewLine;
-
-            foreach (var value in counts.Values)
-                sb.AppendFormat(format, value.Name, value.Count, value.Count == 1 ? " log" : " logs");
-
-            return sb.ToString();
-        }
-        
         #endregion
 
     }

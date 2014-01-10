@@ -25,10 +25,11 @@ namespace Medidata.Lumberjack.Core.Data
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="sessionFormat"></param>
         /// <param name="formatFieldElement"></param>
         /// <param name="sessionField"></param>
         /// <param name="id"></param>
-        public FormatField(FormatFieldElement formatFieldElement, SessionField sessionField, int id) {
+        public FormatField(SessionFormat sessionFormat, FormatFieldElement formatFieldElement, SessionField sessionField, int id) {
             if (formatFieldElement == null){
                 Logger.GetInstance().Error("Failed to create FormatField: no FormatFieldElement provided");
                 throw new ArgumentNullException("formatFieldElement");
@@ -40,6 +41,7 @@ namespace Medidata.Lumberjack.Core.Data
                 throw new ArgumentNullException("sessionField");
             }
 
+            SessionFormat = sessionFormat;
             SessionField = sessionField;
             _formatFieldElement = formatFieldElement;
             
@@ -84,6 +86,11 @@ namespace Medidata.Lumberjack.Core.Data
         /// The SessionField object which the FormatField refers to
         /// </summary>
         public SessionField SessionField { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SessionFormat SessionFormat { get; private set; }
 
         /// <summary>
         /// 

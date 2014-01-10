@@ -38,9 +38,9 @@ namespace Medidata.Lumberjack.Core.Data
             TimestampFormat = formatElement.TimestampFormat;
 
             Contexts = new ContextCollection(session);
-            Contexts[FormatContextEnum.Filename] = new ContextFormat(session, formatElement.FilenameContext);
-            Contexts[FormatContextEnum.Entry] = new ContextFormat(session, formatElement.EntryContext);
-            Contexts[FormatContextEnum.Content] = new ContextFormat(session, formatElement.ContentContext);
+            Contexts[FormatContextEnum.Filename] = new ContextFormat(session, this, formatElement.FilenameContext);
+            Contexts[FormatContextEnum.Entry] = new ContextFormat(session, this, formatElement.EntryContext);
+            Contexts[FormatContextEnum.Content] = new ContextFormat(session, this, formatElement.ContentContext);
 
             // TODO: Verify that for each FormatField within each ContextFormat:
             //   - if a given SessionField (referred to by the FormatField) is marked as Required,

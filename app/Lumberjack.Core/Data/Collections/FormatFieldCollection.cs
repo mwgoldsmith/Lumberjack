@@ -76,25 +76,6 @@ namespace Medidata.Lumberjack.Core.Data.Collections
 
             return items;
         }
-        /// <summary>
-        /// Finds all FormatField items in the collection which are linked to a
-        /// specified SessionField. 
-        /// </summary>
-        /// <param name="sessionField">The SessionField object.</param>
-        /// <returns></returns>
-        public FormatField FindFirst(SessionField sessionField) {
-            var items = new List<FormatField>();
-
-            lock (_locker) {
-                for (var i = _items.Count - 1; i > 0 ; i--) {
-                    if (sessionField.Id == _items[i].SessionField.Id) {
-                        return _items[i];
-                    }
-                }
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// 
@@ -106,6 +87,24 @@ namespace Medidata.Lumberjack.Core.Data.Collections
             lock (_locker) {
                 for (var i = 0; i < _items.Count; i++) {
                     if (name.Equals(_items[i].Name)) {
+                        return _items[i];
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Finds all FormatField items in the collection which are linked to a
+        /// specified SessionField. 
+        /// </summary>
+        /// <param name="sessionField">The SessionField object.</param>
+        /// <returns></returns>
+        public FormatField FindFirst(SessionField sessionField) {
+            lock (_locker) {
+                for (var i = _items.Count-1; i >= 0 ; i--) {
+                    if (sessionField.Id == _items[i].SessionField.Id) {
                         return _items[i];
                     }
                 }
