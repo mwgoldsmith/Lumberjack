@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
@@ -28,6 +27,15 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         #region Private fields
 
         private readonly Dictionary<FieldDataTypeEnum, IList> _values;
+
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public event ValueUpdatedHandler ValueUpdated;
 
         #endregion
 
@@ -82,6 +90,31 @@ namespace Medidata.Lumberjack.Core.Data.Collections
                 var item = _items[i];
                 if (item.ContainerId == containerId && item.FormatField.Id == formatFieldId) {
                     return _values[formatField.DataType][item.Index];
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="sessionField"></param>
+        /// <returns></returns>
+        public object Find(IFieldValueContainer container, SessionField sessionField) {
+            if (container == null)
+                throw new ArgumentNullException("container");
+            if (sessionField == null)
+                throw new ArgumentNullException("sessionField");
+
+            var containerId = container.Id;
+            var sessionFieldId = sessionField.Id;
+
+            for (var i = 0; i < _items.Count; i++) {
+                var item = _items[i];
+                if (item.ContainerId == containerId && item.FormatField.SessionField.Id == sessionFieldId) {
+                    return _values[item.FormatField.DataType][item.Index];
                 }
             }
 
@@ -179,19 +212,25 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         public void Update<T>(IFieldValueContainer container, FormatField formatField, T value) {
             var containerId = container.Id;
             var formatFieldId = formatField.Id;
+            var changed = false;
 
             lock (_locker) {
                 // Remove the field value lookup if it already exists
                 for (var i = 0; i < _items.Count; i++) {
                     var item = _items[i];
-                    if (item.ContainerId == containerId && item.FormatField.Id == formatFieldId) {
-                        _items.Remove(_items[i]);
-                    }
+                    if (item.ContainerId != containerId || item.FormatField.Id != formatFieldId) 
+                        continue;
+
+                    _items.Remove(_items[i]);
+                    changed = true;
+                    break;
                 }
 
                 // Add the field value
                 Add(container, formatField, value);
             }
+
+            OnValueUpdated(container, formatField, value, changed);
         }
 
         #endregion
@@ -201,19 +240,16 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="fieldDataType"></param>
-        /// <returns></returns>
-        private static Type GetFormatFieldType(FieldDataTypeEnum fieldDataType) {
-            if (fieldDataType == FieldDataTypeEnum.DateTime)
-                return typeof(DateTime);
-            if (fieldDataType == FieldDataTypeEnum.Integer)
-                return typeof(Int32);
-            if (fieldDataType == FieldDataTypeEnum.String)
-                return typeof(string);
-
-            throw new InvalidEnumArgumentException("fieldDataType");
+        /// <param name="container"></param>
+        /// <param name="formatField"></param>
+        /// <param name="value"></param>
+        /// <param name="changed"></param>
+        private void OnValueUpdated(IFieldValueContainer container, FormatField formatField, object value, bool changed) {
+            if (ValueUpdated != null) {
+                ValueUpdated(this, new ValueUpdatedEventArgs(container, formatField, value, changed));
+            }
         }
-       
+
         #endregion
 
     }

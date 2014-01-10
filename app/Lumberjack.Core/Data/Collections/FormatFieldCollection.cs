@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
@@ -11,6 +12,8 @@ namespace Medidata.Lumberjack.Core.Data.Collections
     /// </summary>
     public sealed class FormatFieldCollection : CollectionBase<FormatField>
     {
+        private static long _id;
+
         #region Initializers
         
         /// <summary>
@@ -37,6 +40,14 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         #endregion
 
         #region Public methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static long GetNextId() {
+            return Interlocked.Increment(ref _id);
+        }
 
         /// <summary>
         /// 

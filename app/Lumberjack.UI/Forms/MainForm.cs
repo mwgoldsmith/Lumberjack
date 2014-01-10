@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows.Forms;
 using Medidata.Lumberjack.Core;
 using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Collections;
 using Medidata.Lumberjack.Core.Logging;
 using Medidata.Lumberjack.Core.Processing;
 using Medidata.Lumberjack.UI.Properties;
@@ -60,7 +61,7 @@ namespace Medidata.Lumberjack.UI
             _logger.Trace("UI-MF-001");
 
             messageTimer.Enabled = true;
-
+            _session.FieldValues.ValueUpdated += FieldValues_ValueUpdated;
             _session.ProcessController.ProgressChanged += ProcessController_ProgressChanged;
             _session.ProcessController.LogCompleted += ProcessController_LogCompleted;
             _session.Message += UserSession_Message;
@@ -83,6 +84,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
+            _session.FieldValues.ValueUpdated -= FieldValues_ValueUpdated;
             _session.ProcessController.ProgressChanged -= ProcessController_ProgressChanged;
             _session.ProcessController.LogCompleted -= ProcessController_LogCompleted;
             _session.Message -= UserSession_Message;
@@ -487,6 +489,17 @@ namespace Medidata.Lumberjack.UI
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
+        void FieldValues_ValueUpdated(object source, ValueUpdatedEventArgs e) {
+            if (e.Container is LogFile) {
+                RefreshLogListItem(logsListView, e.Container as LogFile);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void messageTimer_Tick(object sender, EventArgs e) {
@@ -859,9 +872,8 @@ namespace Medidata.Lumberjack.UI
                         throw new InvalidOperationException("Cannot retrieve value for field '" + sessionField.Name + "': does not exist within 'Filename' context.");
                     
                     // Get the field value and format it based on the info specified by Field
-                    var formatField = _session.FormatFields.Find(sessionField.Name, FieldContextFlags.Filename);
-                    var value = _session.FieldValues.Find(log, formatField) ?? "";
-
+                    //var formatField = _session.FormatFields.Find(sessionField.Name, FieldContextFlags.Filename);
+                    var value = _session.FieldValues.Find(log, sessionField) ?? "";
                     return value.ToString();
             }
         }

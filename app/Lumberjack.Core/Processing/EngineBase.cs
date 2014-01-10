@@ -56,12 +56,12 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <summary>
         /// 
         /// </summary>
-        public EngineProgressChangedHandler ProgressChanged;
+        public event EngineProgressChangedHandler ProgressChanged;
 
         /// <summary>
         /// 
         /// </summary>
-        public EngineCompletedHandler Completed;
+        public event EngineCompletedHandler Completed;
 
         #endregion
 
@@ -239,9 +239,6 @@ namespace Medidata.Lumberjack.Core.Processing
                         return false;
                     }
                 } else {
-                    if (field.Name.ToUpper().Equals("TIMESTAMP")) {
-                        var x = value;
-                    }
                     // Check if field was not found but has default value
                     if (value == null && field.Default != null) {
                         value = field.Default;

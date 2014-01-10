@@ -94,6 +94,8 @@
     <Compile Include="Data\Collections\ContextCollection.cs" />
     <Compile Include="Data\Collections\EntryCollection.cs" />
     <Compile Include="Data\Collections\FieldValueCollection.cs" />
+    <Compile Include="Data\Collections\LogFileUpdatedEventArgs.cs" />
+    <Compile Include="Data\Collections\ValueUpdatedEventArgs.cs" />
     <Compile Include="Data\Collections\FormatFieldCollection.cs" />
     <Compile Include="Data\Collections\LogFileCollection.cs" />
     <Compile Include="Data\Collections\SessionFieldCollection.cs" />

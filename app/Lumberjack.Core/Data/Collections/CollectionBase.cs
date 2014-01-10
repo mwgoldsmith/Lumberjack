@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
-    public abstract class CollectionBase<T> : SessionObject, IList<T>, ICollection
+    public abstract class CollectionBase<T> : SessionObject, IList<T>
     {
         #region Constants
 
@@ -60,19 +61,12 @@ namespace Medidata.Lumberjack.Core.Data.Collections
 
         #region Properties
 
-        public void CopyTo(Array array, int index) {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// 
         /// </summary>
         public int Count {
             get { return _items.Count; }
         }
-
-        public object SyncRoot { get; private set; }
-        public bool IsSynchronized { get; private set; }
 
         /// <summary>
         /// 
@@ -141,6 +135,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <returns></returns>
+        [DebuggerStepThrough]
         public IEnumerator<T> GetEnumerator() {
             return _items.GetEnumerator();
         }
@@ -149,6 +144,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <returns></returns>
+        [DebuggerStepThrough]
         IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
         }

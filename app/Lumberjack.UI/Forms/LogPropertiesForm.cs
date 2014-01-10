@@ -351,6 +351,8 @@ namespace Medidata.Lumberjack.UI
                     case "Entry Parsing Status":
                         break;
                 }
+
+                _session.LogFiles.Update(_logFiles);
             }
 
             // TODO: Save

@@ -148,6 +148,7 @@
     <Compile Include="Forms\FormatEditorForm.Designer.cs">
       <DependentUpon>FormatEditorForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\LogFileUpdatedEventArgs.cs" />
     <Compile Include="ListViewColumnSorter.cs" />
     <Compile Include="Forms\LogCacheForm.cs">
       <SubType>Form</SubType>
