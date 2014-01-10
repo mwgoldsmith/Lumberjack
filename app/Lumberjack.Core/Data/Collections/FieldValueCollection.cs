@@ -10,6 +10,21 @@ namespace Medidata.Lumberjack.Core.Data.Collections
     /// </summary>
     public sealed class FieldValueCollection : CollectionBase<FieldValueLookup>
     {
+        // TODO: implement. Use a seperate bucket for each string length to boost performance
+        // when searching for string field values
+        private class StringBuckets
+        {
+            private readonly List<string>[] _buckets;
+            private List<string> _extraBucket = new List<string>();
+
+            public StringBuckets(int numBuckets) {
+                _buckets = new List<string>[Math.Max(numBuckets, 20)];
+                for (var i=0;i<numBuckets;i++)
+                    _buckets[i] = new List<string>();
+            }
+
+        }
+
         #region Private fields
 
         private readonly Dictionary<FieldDataTypeEnum, IList> _values;
@@ -70,6 +85,47 @@ namespace Medidata.Lumberjack.Core.Data.Collections
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Finds all existing values for all FormatFields which are linked to
+        /// a specified SessionField.
+        /// </summary>
+        /// <param name="sessionField"></param>
+        /// <returns></returns>
+        public IEnumerable<object> FindAll(SessionField sessionField) {
+            var result = new List<object>();
+
+            lock (_locker) {
+                for (var i = 0; i < _items.Count; i++) {
+                    var item = _items[i];
+                    if (ReferenceEquals(item.FormatField.SessionField, sessionField)) {
+                        result.Add(_values[item.FormatField.DataType][item.Index]);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Finds all existing values for the specified FormatField.
+        /// </summary>
+        /// <param name="formatField"></param>
+        /// <returns></returns>
+        public IEnumerable<object> FindAll(FormatField formatField) {
+            var result = new List<object>();
+
+            lock (_locker) {
+                for (var i = 0; i < _items.Count; i++) {
+                    var item = _items[i];
+                    if (ReferenceEquals(item.FormatField, formatField)) {
+                        result.Add(_values[item.FormatField.DataType][item.Index]);
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

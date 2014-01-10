@@ -70,11 +70,13 @@
             // 
             // logPropertyListBox
             // 
+            this.logPropertyListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.logPropertyListBox.FormattingEnabled = true;
             this.logPropertyListBox.Location = new System.Drawing.Point(12, 32);
             this.logPropertyListBox.Name = "logPropertyListBox";
             this.logPropertyListBox.Size = new System.Drawing.Size(130, 121);
             this.logPropertyListBox.TabIndex = 2;
+            this.logPropertyListBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.logPropertyListBox_DrawItem);
             this.logPropertyListBox.SelectedIndexChanged += new System.EventHandler(this.logPropertyListBox_SelectedIndexChanged);
             // 
             // logFileTextBox
@@ -144,12 +146,13 @@
             this.formatFieldTreeView.Name = "formatFieldTreeView";
             this.formatFieldTreeView.Size = new System.Drawing.Size(130, 158);
             this.formatFieldTreeView.TabIndex = 9;
-            this.formatFieldTreeView.LocationChanged += new System.EventHandler(this.formatFieldTreeView_LocationChanged);
+            this.formatFieldTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.formatFieldTreeView_AfterSelect);
             // 
             // sessionFieldListBox
             // 
             this.sessionFieldListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.sessionFieldListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.sessionFieldListBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.sessionFieldListBox.FormattingEnabled = true;
             this.sessionFieldListBox.IntegralHeight = false;
@@ -157,6 +160,7 @@
             this.sessionFieldListBox.Name = "sessionFieldListBox";
             this.sessionFieldListBox.Size = new System.Drawing.Size(130, 158);
             this.sessionFieldListBox.TabIndex = 10;
+            this.sessionFieldListBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.sessionFieldListBox_DrawItem);
             this.sessionFieldListBox.SelectedIndexChanged += new System.EventHandler(this.sessionFieldListBox_SelectedIndexChanged);
             // 
             // editPanel
@@ -198,24 +202,27 @@
             this.valueComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.valueComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.valueComboBox.Enabled = false;
             this.valueComboBox.FormattingEnabled = true;
-            this.valueComboBox.Location = new System.Drawing.Point(50, 9);
+            this.valueComboBox.Location = new System.Drawing.Point(50, 8);
             this.valueComboBox.Name = "valueComboBox";
             this.valueComboBox.Size = new System.Drawing.Size(381, 21);
             this.valueComboBox.TabIndex = 1;
             this.valueComboBox.Visible = false;
+            this.valueComboBox.SelectedValueChanged += new System.EventHandler(this.valueComboBox_SelectedValueChanged);
+            this.valueComboBox.TextChanged += new System.EventHandler(this.valueComboBox_TextChanged);
             // 
             // valueTextBox
             // 
             this.valueTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.valueTextBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.valueTextBox.Location = new System.Drawing.Point(50, 9);
             this.valueTextBox.Name = "valueTextBox";
             this.valueTextBox.ReadOnly = true;
             this.valueTextBox.Size = new System.Drawing.Size(381, 20);
             this.valueTextBox.TabIndex = 1;
             this.valueTextBox.Visible = false;
+            this.valueTextBox.TextChanged += new System.EventHandler(this.valueTextBox_TextChanged);
             // 
             // valueLabel
             // 

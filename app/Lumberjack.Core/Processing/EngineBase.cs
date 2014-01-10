@@ -203,7 +203,7 @@ namespace Medidata.Lumberjack.Core.Processing
 
                 var msg = String.Format("Entering. Args: {{ logFile = {0}, container = {1}, contextFormat = {2}, match = {3} (chars) }}", log, containerStr, contextFormat, match.Length);
 
-                _logger.Trace("EB-PFF-001", msg);
+                //_logger.Trace("EB-PFF-001", msg);
             }
 
             // Iterate over each field the format can contain within the filename
@@ -246,10 +246,10 @@ namespace Medidata.Lumberjack.Core.Processing
 
                     if (value != null) {
                         if (Logger.IsTraceEnabled) {
-                            if (field.Name == "MESSAGE")
-                                _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = " + value.Length + " characters (len)");
-                            else
-                                _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = '" + value + "'");
+                           // if (field.Name == "MESSAGE")
+                           //     _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = " + value.Length + " characters (len)");
+                           // else
+                           //     _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = '" + value + "'");
                         }
 
                         if (field.Name.Equals("LEVEL")) {
