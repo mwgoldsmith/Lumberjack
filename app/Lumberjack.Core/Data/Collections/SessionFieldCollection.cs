@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
@@ -32,6 +30,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="index"></param>
         /// <returns></returns>
         public override SessionField this[int index] {
+            [DebuggerStepThrough]
             get { return _items[index]; }
         }
 
@@ -45,9 +44,13 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="name"></param>
         /// <returns></returns>
         public SessionField Find(string name) {
-            for (var i = 0; i < _items.Count; i++) {
-                if (_items[i].Name.Equals(name))
-                    return _items[i];
+            var len = _items.Count;
+
+            for (var i = 0; i < len; i++) {
+                var item = _items[i];
+
+                if (name.Equals(item.Name))
+                    return item;
             }
 
             return null;
@@ -58,10 +61,18 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="contextFlags"></param>
         /// <returns></returns>
-        public IEnumerable<SessionField> FindAll(FieldContextFlags contextFlags) {
-            var fields = _items.Where(f => (f.ContextFlags & contextFlags) != 0);
+        public List<SessionField> FindAll(FieldContextFlags contextFlags) {
+            var result = new List<SessionField>();
+            var len = _items.Count;
 
-            return fields;
+            for (var i = 0; i < len; i++) {
+                var item = _items[i];
+
+                if ((item.ContextFlags & contextFlags) != 0)
+                    result.Add(item);
+            }
+
+            return result;
         }
 
         #endregion

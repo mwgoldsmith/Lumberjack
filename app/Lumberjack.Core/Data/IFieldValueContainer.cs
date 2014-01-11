@@ -7,6 +7,6 @@ namespace Medidata.Lumberjack.Core.Data
 {
     public interface IFieldValueContainer
     {
-        long Id { get; set; }
+        int Id { get; set; }
     }
 }

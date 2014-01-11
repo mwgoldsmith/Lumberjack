@@ -40,11 +40,10 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="logFile"></param>
         /// <returns></returns>
-        protected override IEnumerable<LogFile> GetLogFilesToProcess() {
-            return SessionInstance.LogFiles.ToList().FindAll(f =>
-                f.EntryParseStatus == EngineStatusEnum.None
-                && f.FilenameParseStatus == EngineStatusEnum.Completed);
+        public override bool TestIfProcessable(LogFile logFile) {
+            return logFile.EntryParseStatus == EngineStatusEnum.None && logFile.SessionFormat != null;
         }
 
         /// <summary>
@@ -158,9 +157,9 @@ namespace Medidata.Lumberjack.Core.Processing
         /// </summary>
         /// <param name="logFile"></param>
         /// <param name="success"></param>
-        /// <returns></returns>
-        protected override void ProcessComplete(LogFile logFile, bool success) {
-
+        /// <param name="timeElapsed"></param>
+        protected override void ProcessComplete(LogFile logFile, bool success, long timeElapsed) {
+            logFile.ProcessTimeElapse[ProcessTypeEnum.Entries] = timeElapsed;
         }
 
         /// <summary>

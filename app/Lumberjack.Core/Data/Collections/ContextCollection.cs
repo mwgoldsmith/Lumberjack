@@ -13,19 +13,9 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <param name="session"></param>
-        public ContextCollection(UserSession session) :this(session, 3) {
-
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="session"></param>
-        /// <param name="capacity"></param>
-        private ContextCollection(UserSession session, int capacity) : base(session, capacity) {
-            _items.Add(null);
-            _items.Add(null);
-            _items.Add(null);
+        public ContextCollection(UserSession session)
+            : base(session) {
+            _items.AddRange(new ContextFormat[] {null, null, null});
         }
 
         #endregion
@@ -38,6 +28,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="index"></param>
         /// <returns></returns>
         public override ContextFormat this[int index] {
+            [DebuggerStepThrough]
             get { return _items[index]; }
         }
 
@@ -47,7 +38,9 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="contextType"></param>
         /// <returns></returns>
         public ContextFormat this[FormatContextEnum contextType] {
+            [DebuggerStepThrough]
             get { return _items[GetContextEnumIndex(contextType)]; }
+            [DebuggerStepThrough]
             set { _items[GetContextEnumIndex(contextType)] = value; }
         }
 

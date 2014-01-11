@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Threading;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
@@ -15,24 +11,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
     {
         #region Private fields
 
-        private int _id;
-        
-        #endregion
-
-        #region Event Handlers
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public event LogFileUpdatedHandler LogFileRemoved;
-        /// <summary>
-        /// 
-        /// </summary>
-        public event LogFileUpdatedHandler LogFileAdded;
-        /// <summary>
-        /// 
-        /// </summary>
-        public event LogFileUpdatedHandler LogFileUpdated;
+        private static long _id;
 
         #endregion
 
@@ -42,7 +21,8 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <param name="session"></param>
-        public LogFileCollection(UserSession session) : base(session) {
+        public LogFileCollection(UserSession session)
+            : base(session) {
         }
 
         #endregion
@@ -55,79 +35,8 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="index"></param>
         /// <returns></returns>
         public override LogFile this[int index] {
+            [DebuggerStepThrough]
             get { return _items[index]; }
-        }
-
-        #endregion
-
-        #region Method overrides
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFile"></param>
-        public override void Add(LogFile logFile) {
-            base.Add(logFile);
-            OnLogFileAdded(new[]{logFile});
-
-            ////
-            SessionInstance.ProcessController.Start();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFiles"></param>
-        public override void Add(LogFile[] logFiles) {
-            base.Add(logFiles);
-            OnLogFileAdded(logFiles);
-
-            ////
-            SessionInstance.ProcessController.Start();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="logFile"></param>
-        public override void Insert(int index, LogFile logFile) {
-            base.Insert(index, logFile);
-            OnLogFileAdded(new[] { logFile });
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFile"></param>
-        /// <returns></returns>
-        public override bool Remove(LogFile logFile) {
-            var ret = base.Remove(logFile);
-
-            OnLogFileRemoved(new[] { logFile });
-
-            return ret;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        public override void RemoveAt(int index) {
-            var logFile = _items[index];
-
-            base.RemoveAt(index);
-
-            OnLogFileRemoved(new[] { logFile });
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFiles"></param>
-        public override void Remove(LogFile[] logFiles) {
-            base.Remove(logFiles);
-            OnLogFileRemoved(logFiles);
         }
 
         #endregion
@@ -138,25 +47,42 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <param name="filename"></param>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="filename"/> is null. </exception>
+        /// <exception cref="T:System.ArgumentException">The file name is empty, contains only white spaces, or contains invalid characters. </exception>
+        /// <exception cref="T:System.NotSupportedException"><paramref name="filename"/> contains a colon (:) in the middle of the string. </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.UnauthorizedAccessException">Access to <paramref name="filename"/> is denied. </exception>
+        /// <exception cref="T:System.IO.IOException"><see cref="M:System.IO.FileSystemInfo.Refresh"/> cannot update the state of the file or directory. </exception>
+        /// <exception cref="T:System.IO.FileNotFoundException">The file does not exist.-or- The Length property is called for a directory. </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters. </exception>
         public void Add(string filename) {
             var size = (new FileInfo(filename)).Length;
 
-            Add(new LogFile(filename, size) { Id = _id++ });
+            Add(new LogFile(filename, size) { Id = GetNextId() });
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="filenames"></param>
+        /// <exception cref="T:System.ArgumentNullException">A filename in <paramref name="filenames"/> is null. </exception>
+        /// <exception cref="T:System.ArgumentException">The file name is empty, contains only white spaces, or contains invalid characters. </exception>
+        /// <exception cref="T:System.NotSupportedException">A filename in <paramref name="filenames"/> contains a colon (:) in the middle of the string. </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.UnauthorizedAccessException">Access to a file in <paramref name="filenames"/> is denied. </exception>
+        /// <exception cref="T:System.IO.IOException"><see cref="M:System.IO.FileSystemInfo.Refresh"/> cannot update the state of the file or directory. </exception>
+        /// <exception cref="T:System.IO.FileNotFoundException">The file does not exist.-or- The Length property is called for a directory. </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters. </exception>
         public void Add(string[] filenames) {
-            var logFiles = new LogFile[filenames.Length];
+            var len = filenames.Length;
+            var logFiles = new LogFile[len];
 
             // Create array of new LogFile instances to add to the session
-            for (var i = 0; i < filenames.Length; i++) {
+            for (var i = 0; i < len; i++) {
                 var filename = filenames[i];
                 var size = (new FileInfo(filename)).Length;
 
-                logFiles[i] = new LogFile(filename, size) { Id = _id++ };
+                logFiles[i] = new LogFile(filename, size) { Id = GetNextId() };
             }
 
             Add(logFiles);
@@ -165,20 +91,10 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="filename"></param>
         /// <returns></returns>
-        public LogFile Find(string filename) {
-            LogFile log = null;
-
-            lock (_locker) {
-                for (var i = 0; i < _items.Count && log == null; i++) {
-                    if (_items[i].FullFilename.Equals(filename)) {
-                        log = _items[i];
-                    }
-                }
-            }
-
-            return log;
+        [DebuggerStepThrough]
+        public static int GetNextId() {
+            return (int)Interlocked.Increment(ref _id);
         }
 
         /// <summary>
@@ -197,41 +113,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
             // TODO: When LogFile objects are made immutable outside of this collection, 
             // TODO: this will be the only method to actually update the LogFile's data
             
-            OnLogFileUpdated(logFiles);
-        }
-
-        #endregion
-       
-        #region Private methods
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFiles"></param>
-        private void OnLogFileRemoved(LogFile[] logFiles) {
-            if (LogFileRemoved != null) {
-                LogFileRemoved(this, new LogFilesUpdatedEventArgs(logFiles));
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFiles"></param>
-        private void OnLogFileAdded(LogFile[] logFiles) {
-            if (LogFileAdded != null) {
-                LogFileAdded(this, new LogFilesUpdatedEventArgs(logFiles));
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFiles"></param>
-        private void OnLogFileUpdated(LogFile[] logFiles) {
-            if (LogFileUpdated != null) {
-                LogFileUpdated(this, new LogFilesUpdatedEventArgs(logFiles));
-            }
+            OnItemUpdated(logFiles);
         }
 
         #endregion

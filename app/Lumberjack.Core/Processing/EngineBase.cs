@@ -130,6 +130,15 @@ namespace Medidata.Lumberjack.Core.Processing
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logFiles"></param>
+        /// <returns></returns>
+        public IEnumerable<LogFile> GetProcessable(IEnumerable<LogFile> logFiles) {
+            return logFiles.ToList().FindAll(TestIfProcessable);
+        }
+
         #endregion
 
         #region Protected methods
@@ -334,7 +343,7 @@ namespace Medidata.Lumberjack.Core.Processing
 
             try {
                 while (!_isStopping && _isRunning) {
-                    var logFiles = GetLogFilesToProcess().ToArray();
+                    var logFiles = GetProcessable(SessionInstance.LogFiles.ToList()).ToArray();
                     if (logFiles.Length == 0) {
                         if (Logger.IsTraceEnabled)
                             _logger.Trace("EB-ET-002", "No log files found to process");
@@ -374,7 +383,7 @@ namespace Medidata.Lumberjack.Core.Processing
                         SetLogProcessStatus(log, success ? EngineStatusEnum.Completed : EngineStatusEnum.Failed);
                         OnProgressChanged(metrics, log);
 
-                        ProcessComplete(log, success);
+                        ProcessComplete(log, success, sw.ElapsedMilliseconds);
                     }
                 }
             } catch (Exception ex) {
@@ -423,9 +432,10 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="logFile"></param>
         /// <returns></returns>
-        protected abstract IEnumerable<LogFile> GetLogFilesToProcess();
-        
+        public abstract bool TestIfProcessable(LogFile logFile);
+
         /// <summary>
         /// 
         /// </summary>
@@ -445,7 +455,8 @@ namespace Medidata.Lumberjack.Core.Processing
         /// </summary>
         /// <param name="logFile"></param>
         /// <param name="success"></param>
-        protected abstract void ProcessComplete(LogFile logFile, bool success);
+        /// <param name="timeElapsed"></param>
+        protected abstract void ProcessComplete(LogFile logFile, bool success, long timeElapsed);
 
         /// <summary>
         /// 

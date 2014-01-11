@@ -22,7 +22,7 @@ namespace Medidata.Lumberjack.Core.Data
         /// <summary>
         /// 
         /// </summary>
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// 

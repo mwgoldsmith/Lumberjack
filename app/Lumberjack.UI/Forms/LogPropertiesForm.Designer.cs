@@ -78,6 +78,7 @@
             this.logPropertyListBox.TabIndex = 2;
             this.logPropertyListBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.logPropertyListBox_DrawItem);
             this.logPropertyListBox.SelectedIndexChanged += new System.EventHandler(this.logPropertyListBox_SelectedIndexChanged);
+            this.logPropertyListBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.logPropertyListBox_MouseDoubleClick);
             // 
             // logFileTextBox
             // 
@@ -147,6 +148,7 @@
             this.formatFieldTreeView.Size = new System.Drawing.Size(130, 158);
             this.formatFieldTreeView.TabIndex = 9;
             this.formatFieldTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.formatFieldTreeView_AfterSelect);
+            this.formatFieldTreeView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.formatFieldTreeView_MouseDoubleClick);
             // 
             // sessionFieldListBox
             // 
@@ -162,6 +164,7 @@
             this.sessionFieldListBox.TabIndex = 10;
             this.sessionFieldListBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.sessionFieldListBox_DrawItem);
             this.sessionFieldListBox.SelectedIndexChanged += new System.EventHandler(this.sessionFieldListBox_SelectedIndexChanged);
+            this.sessionFieldListBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.sessionFieldListBox_MouseDoubleClick);
             // 
             // editPanel
             // 
@@ -211,6 +214,7 @@
             this.valueComboBox.Visible = false;
             this.valueComboBox.SelectedValueChanged += new System.EventHandler(this.valueComboBox_SelectedValueChanged);
             this.valueComboBox.TextChanged += new System.EventHandler(this.valueComboBox_TextChanged);
+            this.valueComboBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.valueComboBox_KeyDown);
             // 
             // valueTextBox
             // 
@@ -224,6 +228,7 @@
             this.valueTextBox.TabIndex = 1;
             this.valueTextBox.Visible = false;
             this.valueTextBox.TextChanged += new System.EventHandler(this.valueTextBox_TextChanged);
+            this.valueTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.valueTextBox_KeyDown);
             // 
             // valueLabel
             // 
@@ -236,7 +241,6 @@
             // 
             // LogPropertiesForm
             // 
-            this.AcceptButton = this.okButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.okButton;

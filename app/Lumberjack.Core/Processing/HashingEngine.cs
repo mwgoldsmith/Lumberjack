@@ -28,12 +28,8 @@ namespace Medidata.Lumberjack.Core.Processing
 
         #region Base overrides
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        protected override IEnumerable<LogFile> GetLogFilesToProcess() {
-            return SessionInstance.LogFiles.ToList().FindAll(f => f.HashStatus == EngineStatusEnum.None);
+        public override bool TestIfProcessable(LogFile logFile) {
+            return logFile.HashStatus == EngineStatusEnum.None;
         }
 
         /// <summary>
@@ -77,9 +73,9 @@ namespace Medidata.Lumberjack.Core.Processing
         /// </summary>
         /// <param name="logFile"></param>
         /// <param name="success"></param>
-        /// <returns></returns>
-        protected override void ProcessComplete(LogFile logFile, bool success) {
-
+        /// <param name="timeElapsed"></param>
+        protected override void ProcessComplete(LogFile logFile, bool success, long timeElapsed) {
+            logFile.ProcessTimeElapse[ProcessTypeEnum.Hash] = timeElapsed;
         }
 
         /// <summary>

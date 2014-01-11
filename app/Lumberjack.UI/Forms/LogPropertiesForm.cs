@@ -290,6 +290,11 @@ namespace Medidata.Lumberjack.UI
             valueComboBox.Enabled = true;
             valueComboBox.DropDownStyle =_isFieldSelected ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
 
+            if (valueComboBox.DataSource == null)
+                valueTextBox.Focus();
+            else
+                valueComboBox.Focus();
+
             _editMode = true;
         }
 
@@ -335,14 +340,17 @@ namespace Medidata.Lumberjack.UI
                 }
             } else {
                 // Update the log file property for the referenced LogFile objects
-                var logFiles = new List<LogFile>(_logFiles);
+                List<LogFile> logFiles = null;
 
                 switch (_curListItem.Name) {
-                    case "Full Filename":
-                        break;
                     case "Session Format":
-                        var sessionFormat = valueComboBox.SelectedItem as SessionFormat;
+                        var sessionFormat = (SessionFormat)valueComboBox.SelectedItem;
+                        logFiles = _logFiles.ToList().FindAll(x => x.SessionFormat != null && x.SessionFormat.Id != sessionFormat.Id);
                         logFiles.ForEach(x => x.SessionFormat = sessionFormat);
+                        break;
+
+                    // TODO: implement the below if a need for them is ever found
+                    case "Full Filename":
                         break;
                     case "Hashing Status":
                         break;
@@ -352,7 +360,9 @@ namespace Medidata.Lumberjack.UI
                         break;
                 }
 
-                _session.LogFiles.Update(_logFiles);
+                // Only update the LogFiles which were modified
+                if (logFiles != null)
+                    _session.LogFiles.Update(logFiles.ToArray());
             }
 
             // TODO: Save
@@ -401,6 +411,16 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void logPropertyListBox_MouseDoubleClick(object sender, MouseEventArgs e) {
+            if (editButton.Enabled) 
+                editButton.PerformClick();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void logPropertyListBox_DrawItem(object sender, DrawItemEventArgs e) {
             DrawListBoxItem((ListBox)sender, e, !_isFieldSelected);
         }
@@ -432,6 +452,16 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void sessionFieldListBox_MouseDoubleClick(object sender, MouseEventArgs e) {
+            if (editButton.Enabled)
+                editButton.PerformClick();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void sessionFieldListBox_DrawItem(object sender, DrawItemEventArgs e) {
             DrawListBoxItem((ListBox)sender, e, _isFieldSelected);
         }
@@ -450,8 +480,28 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void formatFieldTreeView_MouseDoubleClick(object sender, MouseEventArgs e) {
+            if (editButton.Enabled)
+                editButton.PerformClick();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void valueTextBox_TextChanged(object sender, EventArgs e) {
 
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void valueTextBox_KeyDown(object sender, KeyEventArgs e) {
+            if (e.KeyCode == Keys.Enter && saveButton.Enabled)
+                saveButton.PerformClick();
         }
 
         /// <summary>
@@ -493,6 +543,16 @@ namespace Medidata.Lumberjack.UI
             }
 
             saveButton.Enabled = modified;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void valueComboBox_KeyDown(object sender, KeyEventArgs e) {
+            if (e.KeyCode == Keys.Enter && saveButton.Enabled)
+                saveButton.PerformClick();
         }
 
         #endregion
@@ -592,7 +652,7 @@ namespace Medidata.Lumberjack.UI
                     new ListItem("Full Filename", singleView ? logFile.FullFilename : null)
                         {
                             Details = GetFullFilenamePropertyDetail(logFiles),
-                            Readonly = !singleView
+                            Readonly = true//!singleView
                         },
                     new ListItem("Session Format")
                         {
@@ -608,7 +668,7 @@ namespace Medidata.Lumberjack.UI
                             Details = singleView ? null : GetAggregateProperty(v => v.HashStatus, n => n.ToString()),
                             ComboDataSource = _engineStatusProperties,
                             ComboDisplayMember = "Name",
-                            Readonly = false
+                            Readonly = true//false
                         },
                     new ListItem("Filename Parsing Status")
                         {
@@ -616,7 +676,7 @@ namespace Medidata.Lumberjack.UI
                             Details = singleView ? null : GetAggregateProperty(v => v.FilenameParseStatus, n => n.ToString()),
                             ComboDataSource = _engineStatusProperties,
                             ComboDisplayMember = "Name",
-                            Readonly = false
+                            Readonly = true//false
                         },
                     new ListItem("Entry Parsing Status")
                         {
@@ -624,8 +684,13 @@ namespace Medidata.Lumberjack.UI
                             Details = singleView ? null : GetAggregateProperty(v => v.EntryParseStatus, n => n.ToString()),
                             ComboDataSource = _engineStatusProperties,
                             ComboDisplayMember = "Name",
-                            Readonly = false
+                            Readonly = true//false
                         },
+                    // TODO: Implement in a later release
+                    //new ListItem("Engine Performance")
+                    //    {
+                    //        Details = GetEnginePerfDetail(_logFiles)
+                    //    },
                     new ListItem("Entry Statistics")
                         {
                             Details = GetEntryStatsDetail(_logFiles)
@@ -864,6 +929,20 @@ namespace Medidata.Lumberjack.UI
             return sb.ToString();
         }
 
+        // TODO: Implement
+        //private string GetEnginePerfDetail(LogFile[] logFiles) {
+        //    var sb = new StringBuilder();
+
+        //    sb.AppendLine("Hash Engine:");
+        //    sb.Append(GetPerformanceMetrics(logFiles, ProcessTypeEnum.Hash, x => x.HashStatus == EngineStatusEnum.Completed));
+        //    sb.AppendLine("Filename Parsing Engine:");
+        //    sb.Append(GetPerformanceMetrics(logFiles, ProcessTypeEnum.Filename, x => x.FilenameParseStatus == EngineStatusEnum.Completed));
+        //    sb.AppendLine("Entry Parsing Engine:");
+        //    sb.Append(GetPerformanceMetrics(logFiles, ProcessTypeEnum.Entries, x => x.EntryParseStatus == EngineStatusEnum.Completed));
+
+        //    return sb.ToString();
+        //}
+        
         /// <summary>
         /// 
         /// </summary>
@@ -1075,6 +1154,5 @@ namespace Medidata.Lumberjack.UI
         }
 
         #endregion
-
     }
 }

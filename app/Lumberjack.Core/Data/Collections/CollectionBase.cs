@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
@@ -36,7 +34,8 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <param name="session"></param>
-        protected CollectionBase(UserSession session) : this(session, DefaultCapacity) {
+        protected CollectionBase(UserSession session) 
+            : this(session, DefaultCapacity) {
         
         }
 
@@ -44,7 +43,8 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// Constructor that sets the size of the list to the capacity number.
         /// </summary>
         /// <param name="capacity">Number of items you want the list to default to in size.</param>
-        protected CollectionBase(int capacity) : this(null, capacity) {
+        protected CollectionBase(int capacity) 
+            : this(null, capacity) {
         }
 
         /// <summary>
@@ -59,12 +59,30 @@ namespace Medidata.Lumberjack.Core.Data.Collections
 
         #endregion
 
+        #region Event Handlers
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public event ItemUpdatedHandler<T> ItemRemoved;
+        /// <summary>
+        /// 
+        /// </summary>
+        public event ItemAddedHandler<T> ItemAdded;
+        /// <summary>
+        /// 
+        /// </summary>
+        public event ItemRemovedHandler<T> ItemUpdated;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
         /// 
         /// </summary>
         public int Count {
+            [DebuggerStepThrough]
             get { return _items.Count; }
         }
 
@@ -77,6 +95,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         public bool IsEmpty {
+            [DebuggerStepThrough]
             get { return _items.Count == 0;  }
         }
 
@@ -90,7 +109,9 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="index"></param>
         /// <returns></returns>
         public virtual T this[int index] {
+            [DebuggerStepThrough]
             get { return _items[index]; }
+            [DebuggerStepThrough]
             set { _items[index] = value; }
         }
 
@@ -102,15 +123,21 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <param name="item"></param>
-        public virtual void Add(T item) {
+        public void Add(T item) {
             _items.Add(item);
+
+            OnItemAdded(item);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public virtual void Clear() {
+        public void Clear() {
+            var items = ToArray();
+
             _items.Clear();
+
+            OnItemRemoved(items);
         }
 
         /// <summary>
@@ -163,8 +190,10 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <param name="item"></param>
-        public virtual void Insert(int index, T item) {
+        public void Insert(int index, T item) {
             _items.Insert(index, item);
+
+            OnItemAdded(item);
         }
         
         /// <summary>
@@ -172,28 +201,38 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public virtual bool Remove(T item) {
-            return _items.Remove(item);
+        public bool Remove(T item) {
+            var result = _items.Remove(item);
+
+            OnItemRemoved(item);
+
+            return result;
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="index"></param>
-        public virtual void RemoveAt(int index) {
+        public void RemoveAt(int index) {
+            var item = _items[index];
+
             _items.RemoveAt(index);
+
+            OnItemRemoved(item);
         }
 
         #endregion
 
-        #region Public properties
+        #region Public methods
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="entries"></param>
-        public virtual void Add(T[] entries) {
-            _items.AddRange(entries);
+        /// <param name="items"></param>
+        public void Add(T[] items) {
+            _items.AddRange(items);
+
+            OnItemAdded(items);
         }
 
         /// <summary>
@@ -217,14 +256,17 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <param name="items"></param>
-        public virtual void Remove(T[] items) {
+        public void Remove(T[] items) {
             _items.Remove(items);
+
+            OnItemRemoved(items);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
+        [DebuggerStepThrough]
         public T[] ToArray() {
             var count = _items.Count;
             var items = new T[count];
@@ -239,8 +281,73 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <returns></returns>
-        public List<T> ToList() {
+        [DebuggerStepThrough]
+        public List<T> ToList() {  
             return (new List<T>(_items));
+        }
+
+        #endregion
+
+        #region Protected methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        [DebuggerStepThrough]
+        protected virtual void OnItemAdded(T item) {
+            OnItemAdded(new[] { item });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        [DebuggerStepThrough]
+        protected virtual void OnItemAdded(T[] items) {
+            if (ItemAdded != null) {
+                ItemAdded(this, new CollectionItemEventArgs<T>(items)); 
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        [DebuggerStepThrough]
+        protected virtual void OnItemRemoved(T item) {
+            OnItemRemoved(new[] { item });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        [DebuggerStepThrough]
+        protected virtual void OnItemRemoved(T[] items) {
+            if (ItemRemoved != null) {
+                ItemRemoved(this, new CollectionItemEventArgs<T>(items));
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        [DebuggerStepThrough]
+        protected virtual void OnItemUpdated(T item) {
+            OnItemUpdated(new[] { item });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        [DebuggerStepThrough]
+        protected virtual void OnItemUpdated(T[] items) {
+            if (ItemUpdated != null) {
+                ItemUpdated(this, new CollectionItemEventArgs<T>(items));
+            }
         }
 
         #endregion
@@ -251,6 +358,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <returns></returns>
+        [DebuggerStepThrough]
         public override string ToString() {
             return "{ Count: " + _items.Count + " }";
         }

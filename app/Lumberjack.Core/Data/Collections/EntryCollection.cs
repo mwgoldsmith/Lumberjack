@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
@@ -32,6 +28,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="index"></param>
         /// <returns></returns>
         public override Entry this[int index] {
+            [DebuggerStepThrough]
             get { return _items[index]; }
         }
 

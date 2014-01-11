@@ -168,6 +168,12 @@ namespace Medidata.Lumberjack.Core.Data
             Filename = Path.GetFileName(fullFilename);
             Filesize = size;
             EntryStats = new LogEntryStats();
+            ProcessTimeElapse = new Dictionary<ProcessTypeEnum, long>()
+                {
+                    {ProcessTypeEnum.Hash, -1},
+                    {ProcessTypeEnum.Filename, -1},
+                    {ProcessTypeEnum.Entries, -1},
+                };
         }
 
         #endregion
@@ -177,7 +183,7 @@ namespace Medidata.Lumberjack.Core.Data
         /// <summary>
         /// 
         /// </summary>
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// 
@@ -218,6 +224,8 @@ namespace Medidata.Lumberjack.Core.Data
         /// 
         /// </summary>
         public string Md5Hash { get; set; }
+
+        public Dictionary<ProcessTypeEnum, long> ProcessTimeElapse { get; private set; }
 
         /// <summary>
         /// 

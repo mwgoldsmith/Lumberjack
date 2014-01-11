@@ -48,7 +48,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         public object Value { get; private set; }
 
         /// <summary>
-        /// If true, indicates the field value was changed. Otherwise, it was added.
+        /// If true, indicates the value was changed. Otherwise, it was added.
         /// </summary>
         public bool Changed { get; private set; }
     }

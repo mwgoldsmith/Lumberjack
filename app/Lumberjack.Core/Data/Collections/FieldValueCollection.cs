@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using log4net.Appender;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
 {
@@ -26,7 +28,9 @@ namespace Medidata.Lumberjack.Core.Data.Collections
 
         #region Private fields
 
-        private readonly Dictionary<FieldDataTypeEnum, IList> _values;
+        private readonly List<DateTime> _dateValues;
+        private readonly List<Int32> _intValues;
+        private readonly List<string> _stringValues;
 
         #endregion
 
@@ -45,13 +49,17 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <param name="session"></param>
-        public FieldValueCollection(UserSession session) : base(session) {
-            _values = new Dictionary<FieldDataTypeEnum, IList>
+        public FieldValueCollection(UserSession session)
+            : base(session) {
+            _dateValues = new List<DateTime>();
+            _intValues = new List<Int32>();
+            _stringValues = new List<string>();
+            /*_values = new Dictionary<FieldDataTypeEnum, IList>
                 {
                     {FieldDataTypeEnum.DateTime, new List<DateTime>()},
                     {FieldDataTypeEnum.Integer, new List<Int32>()},
                     {FieldDataTypeEnum.String, new List<string>()}
-                };
+                };*/
         }
 
         #endregion
@@ -83,17 +91,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
             if (formatField == null)
                 throw new ArgumentNullException("formatField");
             
-            var containerId = container.Id;
-            var formatFieldId = formatField.Id;
-
-            for (var i = 0; i < _items.Count; i++) {
-                var item = _items[i];
-                if (item.ContainerId == containerId && item.FormatField.Id == formatFieldId) {
-                    return _values[formatField.DataType][item.Index];
-                }
-            }
-
-            return null;
+            return Find(container.Id, formatField.DataType, formatField.Id, false);
         }
 
         /// <summary>
@@ -108,17 +106,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
             if (sessionField == null)
                 throw new ArgumentNullException("sessionField");
 
-            var containerId = container.Id;
-            var sessionFieldId = sessionField.Id;
-
-            for (var i = 0; i < _items.Count; i++) {
-                var item = _items[i];
-                if (item.ContainerId == containerId && item.FormatField.SessionField.Id == sessionFieldId) {
-                    return _values[item.FormatField.DataType][item.Index];
-                }
-            }
-
-            return null;
+            return Find(container.Id, sessionField.DataType, sessionField.Id, true);
         }
 
         /// <summary>
@@ -127,15 +115,18 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="sessionField"></param>
         /// <returns></returns>
-        public IEnumerable<object> FindAll(SessionField sessionField) {
+        public List<object> FindAll(SessionField sessionField) {
+            var id = sessionField.Id;
             var result = new List<object>();
 
             lock (_locker) {
-                for (var i = 0; i < _items.Count; i++) {
+                var len = _items.Count;
+                for (var i = 0; i < len; i++) {
                     var item = _items[i];
-                    if (ReferenceEquals(item.FormatField.SessionField, sessionField)) {
-                        result.Add(_values[item.FormatField.DataType][item.Index]);
-                    }
+                    var field = item.FormatField.SessionField;
+
+                    if (field != null && field.Id == id)
+                        result.Add(GetValue(item.FormatField.DataType, item.Index));
                 }
             }
 
@@ -147,18 +138,22 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="formatField"></param>
         /// <returns></returns>
-        public IEnumerable<object> FindAll(FormatField formatField) {
+        public List<object> FindAll(FormatField formatField) {
+            var id = formatField.Id;
             var result = new List<object>();
 
             lock (_locker) {
-                for (var i = 0; i < _items.Count; i++) {
+                var len = _items.Count;
+
+                for (var i = 0; i < len; i++) {
                     var item = _items[i];
-                    if (ReferenceEquals(item.FormatField, formatField)) {
-                        result.Add(_values[item.FormatField.DataType][item.Index]);
-                    }
+                    var field = item.FormatField;
+
+                    if (field != null && field.Id == id)
+                        result.Add(GetValue(item.FormatField.DataType, item.Index));
                 }
             }
-
+            
             return result;
         }
 
@@ -169,37 +164,52 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="container"></param>
         /// <param name="formatField"></param>
         /// <param name="value"></param>
-        public void Add<T>(IFieldValueContainer container, FormatField formatField, T value)  {
-            if (typeof(T) == typeof(string) && formatField.DataType != FieldDataTypeEnum.String) {
-                if (formatField.DataType == FieldDataTypeEnum.DateTime) {
+        public void Add<T>(IFieldValueContainer container, FormatField formatField, T value) {
+            var dataType = formatField.DataType;
+
+            if (typeof (T) == typeof (string) && dataType != FieldDataTypeEnum.String) {
+                if (dataType == FieldDataTypeEnum.DateTime) {
                     DateTime dateValue = new DateTime();
 
-                    if (!formatField.TryUnformatValue(value.ToString(), ref dateValue))
-                        return;
-
-                    Add(container, formatField, dateValue);
-                } else if (formatField.DataType == FieldDataTypeEnum.Integer) {
+                    if (formatField.TryUnformatValue(value.ToString(), ref dateValue))
+                        Add(container, formatField, dateValue);
+                } else if (dataType == FieldDataTypeEnum.Integer) {
                     Int32 intValue = 0;
 
-                    if (!formatField.TryUnformatValue(value.ToString(), ref intValue))
-                        return;
-
-                    Add(container, formatField, intValue);
+                    if (formatField.TryUnformatValue(value.ToString(), ref intValue))
+                        Add(container, formatField, intValue);
                 }
-            } else {
-                lock (_locker) {
-                    var values = _values[formatField.DataType];
 
-                    var index = ((List<T>) values).IndexOf(value);
+                return;
+            }
 
-                    if (index == -1) {
-                        index = values.Count;
-                        values.Add(value);
-                    }
+            IList values;
+            int index;
 
-                    Add(new FieldValueLookup(container.Id, formatField, index));
+            switch (dataType) {
+                case FieldDataTypeEnum.DateTime:
+                    values = _dateValues;
+                    break;
+                case FieldDataTypeEnum.Integer:
+                    values = _intValues;
+                    break;
+                case FieldDataTypeEnum.String:
+                    values = _stringValues;
+                    break;
+                default:
+                    throw new Exception();
+            }
+
+            lock (_locker) {
+                index = ((List<T>) values).IndexOf(value);
+
+                if (index == -1) {
+                    index = values.Count;
+                    values.Add(value);
                 }
             }
+
+            Add(new FieldValueLookup(container.Id, formatField, index));
         }
 
         /// <summary>
@@ -215,8 +225,10 @@ namespace Medidata.Lumberjack.Core.Data.Collections
             var changed = false;
 
             lock (_locker) {
+                var len = _items.Count;
+
                 // Remove the field value lookup if it already exists
-                for (var i = 0; i < _items.Count; i++) {
+                for (var i = 0; i < len; i++) {
                     var item = _items[i];
                     if (item.ContainerId != containerId || item.FormatField.Id != formatFieldId) 
                         continue;
@@ -225,10 +237,10 @@ namespace Medidata.Lumberjack.Core.Data.Collections
                     changed = true;
                     break;
                 }
-
-                // Add the field value
-                Add(container, formatField, value);
             }
+
+            // Add the field value
+            Add(container, formatField, value);
 
             OnValueUpdated(container, formatField, value, changed);
         }
@@ -236,6 +248,57 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         #endregion
 
         #region Private methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="containerId"></param>
+        /// <param name="dataType"></param>
+        /// <param name="fieldId"></param>
+        /// <param name="isSessionId"></param>
+        /// <returns></returns>
+        public object Find(int containerId, FieldDataTypeEnum dataType, int fieldId, bool isSessionId) {
+            var len = _items.Count;
+
+            for (var i = 0; i < len; i++) {
+                var item = _items[i];
+
+                int id;
+                if (isSessionId) {
+                    if (item.FormatField == null || item.FormatField.SessionField == null)
+                        continue;
+
+                    id = item.FormatField.SessionField.Id;
+                } else {
+                    if (item.FormatField == null)
+                        continue;
+
+                    id = item.FormatField.Id;
+                }
+
+                if (item.ContainerId == containerId && fieldId == id) 
+                    return GetValue(dataType, item.Index);
+            }
+
+            return null;
+        }
+       
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dataType"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        private object GetValue(FieldDataTypeEnum dataType, int index) {
+            if (dataType == FieldDataTypeEnum.DateTime)
+                return _dateValues[index];
+            if (dataType == FieldDataTypeEnum.Integer)
+                return _intValues[index];
+            if (dataType == FieldDataTypeEnum.String)
+                return _stringValues[index];
+
+            return null;
+        }
 
         /// <summary>
         /// 

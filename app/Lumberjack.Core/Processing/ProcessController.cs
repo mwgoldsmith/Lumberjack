@@ -85,20 +85,19 @@ namespace Medidata.Lumberjack.Core.Processing
 
             logger.Trace("PC-START-001");
 
-            if (SessionInstance.LogFiles.Any(l => l.HashStatus == EngineStatusEnum.None) && !HashingEngine.IsRunning) {
+            if (!HashingEngine.IsRunning && SessionInstance.LogFiles.Any(x => HashingEngine.TestIfProcessable(x))) {
                 logger.Trace("PC-START-002a");
                 if (HashingEngine.Start()) 
                     logger.Trace("PC-START-002b - running");
             }
-
-            if (SessionInstance.LogFiles.Any(l => l.FilenameParseStatus == EngineStatusEnum.None) && !FileParsingEngine.IsRunning) {
+            
+            if (!FileParsingEngine.IsRunning && SessionInstance.LogFiles.Any(x => FileParsingEngine.TestIfProcessable(x))) {
                 logger.Trace("PC-START-003a");
                 if (FileParsingEngine.Start()) 
                     logger.Trace("PC-START-003b - running");
             }
-
-            if (SessionInstance.LogFiles.Any(l => l.EntryParseStatus == EngineStatusEnum.None && l.FilenameParseStatus == EngineStatusEnum.Completed)
-                && !EntryParsingEngine.IsRunning) {
+            
+            if (!EntryParsingEngine.IsRunning && SessionInstance.LogFiles.Any(x => EntryParsingEngine.TestIfProcessable(x))) {
                 logger.Trace("PC-START-004a");
                 if (EntryParsingEngine.Start()) 
                     logger.Trace("PC-START-004b - running");

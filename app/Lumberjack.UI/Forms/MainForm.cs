@@ -62,6 +62,9 @@ namespace Medidata.Lumberjack.UI
 
             messageTimer.Enabled = true;
             _session.FieldValues.ValueUpdated += FieldValues_ValueUpdated;
+            _session.LogFiles.ItemUpdated += LogFiles_ItemUpdated;
+            _session.LogFiles.ItemRemoved += LogFiles_ItemRemoved;
+            _session.LogFiles.ItemAdded += LogFiles_ItemAdded;
             _session.ProcessController.ProgressChanged += ProcessController_ProgressChanged;
             _session.ProcessController.LogCompleted += ProcessController_LogCompleted;
             _session.Message += UserSession_Message;
@@ -70,7 +73,6 @@ namespace Medidata.Lumberjack.UI
             ShowMessages((bool)Settings.Default["ShowMessages"]);
             ShowLogFiles((bool)Settings.Default["ShowLogFiles"]);
             ShowEntries((bool)Settings.Default["ShowEntries"]);
-
 
             LoadListViewColumns(LogFilesListViewColumnsKey, logsListView, FieldContextFlags.Filename);
             LoadListViewColumns(EntriesListViewColumnsKey, entriesListView, FieldContextFlags.Entry | FieldContextFlags.Content);
@@ -85,6 +87,9 @@ namespace Medidata.Lumberjack.UI
         /// <param name="e"></param>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
             _session.FieldValues.ValueUpdated -= FieldValues_ValueUpdated;
+            _session.LogFiles.ItemUpdated -= LogFiles_ItemUpdated;
+            _session.LogFiles.ItemRemoved -= LogFiles_ItemRemoved;
+            _session.LogFiles.ItemAdded -= LogFiles_ItemAdded;
             _session.ProcessController.ProgressChanged -= ProcessController_ProgressChanged;
             _session.ProcessController.LogCompleted -= ProcessController_LogCompleted;
             _session.Message -= UserSession_Message;
@@ -187,7 +192,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void removeSelectedLogsToolStripMenuItem_Click(object sender, EventArgs e) {
-            RemoveLogFiles(logsListView, logsListView.SelectedItems);
+            RemoveLogFiles(logsListView.SelectedItems);
         }
 
         /// <summary>
@@ -205,7 +210,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void clearLogsToolStripMenuItem_Click(object sender, EventArgs e) {
-            RemoveLogFiles(logsListView, logsListView.Items);
+            RemoveLogFiles(logsListView.Items);
 
             logsListView.SelectedItems.Clear();
         }
@@ -412,7 +417,7 @@ namespace Medidata.Lumberjack.UI
                 return;
 
             var control = (ListView) sender;
-            RemoveLogFiles(control, control.SelectedItems);
+            RemoveLogFiles(control.SelectedItems);
         }
 
         /// <summary>
@@ -476,14 +481,8 @@ namespace Medidata.Lumberjack.UI
         /// <param name="source"></param>
         /// <param name="e"></param>
         private void UserSession_Message(object source, MessageEventArgs e) {
-            this.Invoke(() =>
-                {
-                    lock (_locker) {
-                        _messageBuffer.AppendFormat("[{0:yyyy-MM-dd HH:mm:ss}]  {1}\r\n", e.Timestamp, e.Message);
-                    }
-
-                }, false);
-
+            lock (_locker)
+                _messageBuffer.AppendFormat("[{0:yyyy-MM-dd HH:mm:ss}]  {1}\r\n", e.Timestamp, e.Message);
         }
 
         /// <summary>
@@ -492,9 +491,83 @@ namespace Medidata.Lumberjack.UI
         /// <param name="source"></param>
         /// <param name="e"></param>
         void FieldValues_ValueUpdated(object source, ValueUpdatedEventArgs e) {
-            if (e.Container is LogFile) {
+            if (e.Container is LogFile) 
                 RefreshLogListItem(logsListView, e.Container as LogFile);
-            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
+        void LogFiles_ItemAdded<T>(object source, CollectionItemEventArgs<T> e) where T : LogFile {
+            var logFiles = e.Items;
+            var lvis = new List<ListViewItem>(logFiles.Length);
+
+            this.Invoke(() =>
+                {
+                    bool enabled;
+
+                    lock (_locker) {
+                        var lvic = logsListView.Columns;
+
+                        // Create list view items for the log files and add to the control
+                        foreach (var logFile in logFiles) {
+                            var items = new string[lvic.Count];
+
+                            foreach (ColumnHeader c in lvic)
+                                items[c.DisplayIndex] = GetListViewColumnText(c, logFile);
+
+                            // Set the Tag property of each item to the LogFile it represents
+                            lvis.Add(new ListViewItem(items) {Tag = logFile});
+                        }
+
+                        logsListView.Items.AddRange(lvis.ToArray());
+                        enabled = lvis.Count > 0;
+                    }
+
+                    clearLogsToolStripMenuItem.Enabled = enabled;
+                    clearLogsContextToolStripMenuItem.Enabled = enabled;
+                }, false);
+
+            _session.ProcessController.Start();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
+        void LogFiles_ItemRemoved<T>(object source, CollectionItemEventArgs<T> e) where T : LogFile {
+            var logFiles = e.Items;
+
+            this.Invoke(() =>
+                {
+                    bool isEmpty;
+                    lock (_locker) {
+                        var items = logsListView.Items;
+
+                        for (var i = 0; i < items.Count; i++) {
+                            if (logFiles.Any(x =>x.Id == ((LogFile) items[i].Tag).Id))
+                                items.RemoveAt(i--);
+                        }
+
+                        isEmpty = items.Count == 0;
+                    }
+
+                    clearLogsToolStripMenuItem.Enabled = !isEmpty;
+                    clearLogsContextToolStripMenuItem.Enabled = !isEmpty;
+                }, false);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
+        private void LogFiles_ItemUpdated<T>(object source, CollectionItemEventArgs<T> e) where T : LogFile {
+            e.Items.ToList().ForEach(x => RefreshLogListItem(logsListView, x));
+            _session.ProcessController.Start();
         }
 
         /// <summary>
@@ -503,7 +576,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void messageTimer_Tick(object sender, EventArgs e) {
-            string text = "";
+            var text = "";
             int length;
 
             lock (_locker) {
@@ -514,7 +587,7 @@ namespace Medidata.Lumberjack.UI
                 }
             }
 
-            if (length == 0 || string.IsNullOrEmpty(text))
+            if (length == 0 || String.IsNullOrEmpty(text))
                 return;
 
             messagesTextBox.Text += text;
@@ -536,22 +609,12 @@ namespace Medidata.Lumberjack.UI
             var logFile = e.LogFile;
 
             if (e.ProcessType == ProcessTypeEnum.Hash && logFile.HashStatus == EngineStatusEnum.Completed) {
-                var dupe = _session.LogFiles.Any(x => !ReferenceEquals(x, logFile) && x.Md5Hash != null && x.Md5Hash.Equals(logFile.Md5Hash));
+                var dupe = _session.LogFiles.Any(x => x.Id != logFile.Id && x.Md5Hash != null && x.Md5Hash.Equals(logFile.Md5Hash));
                 if (dupe) {
                     var msg = String.Format("File with hash {0} already exists in session. Removing \"{1}\".", logFile.Md5Hash, logFile.Filename);
 
                     _session.InvokeMessage(this, new MessageEventArgs(MessageTypeEnum.Status, msg));
                     _session.LogFiles.Remove(logFile);
-
-                    this.Invoke(() => {
-                        for (var i = 0; i < logsListView.Items.Count; i++) {
-                            if (e.LogFile != logsListView.Items[i].Tag)
-                                continue;
-
-                            logsListView.Items.Remove(logsListView.Items[i]);
-                            break;
-                        }
-                    }, false);
 
                     return;
                 }
@@ -560,18 +623,7 @@ namespace Medidata.Lumberjack.UI
             this.Invoke(() =>
                 {
                     RefreshLogListItem(logsListView, e.LogFile);
-
-                    var metrics = e.EngineMetrics;
-                    if (metrics.ProcessedBytes !=metrics.TotalBytes) {
-                        var x = e;
-                    }
-
-                    mainStripStatusLabel.Text = String.Format("{4}: Completed {0} of {1} logs ({2} of {3} bytes)",
-                                                              metrics.ProcessedLogs,
-                                                              metrics.TotalLogs,
-                                                              metrics.ProcessedBytes,
-                                                              metrics.TotalBytes,
-                                                              e.ProcessType);
+                    mainStripStatusLabel.Text = GetStatusStripText(e.EngineMetrics, e.ProcessType, true);
                 }, false);
         }
         
@@ -586,17 +638,28 @@ namespace Medidata.Lumberjack.UI
             this.Invoke(() =>
                 {
                     RefreshLogListItem(logsListView, e.LogFile);
-
-                    var metrics = e.EngineMetrics;
-                    mainStripStatusLabel.Text = String.Format("{5}: Processed {0} of {1} logs ({2} of {3} bytes) {4}%",
-                                                              metrics.ProcessedLogs,
-                                                              metrics.TotalLogs,
-                                                              metrics.ProcessedBytes,
-                                                              metrics.TotalBytes,
-                                                              (float)((float)metrics.ProcessedBytes / (float)metrics.TotalBytes) * 100,
-                                                              e.ProcessType);
+                    mainStripStatusLabel.Text = GetStatusStripText(e.EngineMetrics, e.ProcessType, false);
                 }, false);
+
             _lastUpdate = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="metrics"></param>
+        /// <param name="processType"></param>
+        /// <param name="completed"></param>
+        /// <returns></returns>
+        private static string GetStatusStripText(EngineMetrics metrics, ProcessTypeEnum processType, bool completed) {
+            return String.Format("{5}: {6} {0} of {1} logs ({2} of {3} bytes){4}",
+                                 metrics.ProcessedLogs,
+                                 metrics.TotalLogs,
+                                 metrics.ProcessedBytes,
+                                 metrics.TotalBytes,
+                                 completed ? "" : (" " + ((float) ((float) metrics.ProcessedBytes/(float) metrics.TotalBytes)*100) + "%"),
+                                 processType,
+                                 completed ? "Completed" : "Processed");
         }
 
         /// <summary>
@@ -709,33 +772,20 @@ namespace Medidata.Lumberjack.UI
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="control"></param>
         /// <param name="lvItemCollection"></param>
-        private void RemoveLogFiles<T>(ListView control, T lvItemCollection) where T : IEnumerable, IList, ICollection {
-            //if (_logJoiner.IsRunning)
-            //    return;
-
-            if (lvItemCollection.Count == 0)
-                return;
-
-            bool isEmpty;
+        private void RemoveLogFiles<T>(T lvItemCollection) where T : IList, ICollection {
+            LogFile[] logFiles;
 
             lock (_locker) {
-                var items = (from ListViewItem lvi in lvItemCollection select lvi).ToArray();
-                var logFiles = (from ListViewItem lvi in items select (LogFile) lvi.Tag).ToArray();
+                var len = lvItemCollection.Count;
 
-                _session.LogFiles.Remove(logFiles);
-
-                // Remove the items from the list view control
-                for (var i = 0; i < items.Length; i++)
-                    control.Items.Remove(items[i]);
-
-                control.SelectedItems.Clear();
-                isEmpty = control.Items.Count == 0;
+                logFiles = new LogFile[len];
+                for (var i = 0; i < len; i++) 
+                    logFiles[i] = ((LogFile) ((ListViewItem) lvItemCollection[i]).Tag);
             }
 
-            clearLogsToolStripMenuItem.Enabled = !isEmpty;
-            clearLogsContextToolStripMenuItem.Enabled = !isEmpty;
+            if (logFiles.Length > 0)
+                _session.LogFiles.Remove(logFiles);
         }
 
         /// <summary>
@@ -745,38 +795,10 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="filenames">Array of filenames of the log files to add.</param>
         private void AddLogsToSession(string[] filenames) {
-            var lvis = new List<ListViewItem>(filenames.Length);
-            ListViewItemCollection lvic;
-
-            lock (_locker)
-                lvic = logsListView.Columns;
 
             // Add the log files to the session
             _session.LogFiles.Add(filenames);
 
-            try {
-                // Create list view items for the log files and add to the control
-                foreach (var filename in filenames) {
-                    var items = new string[lvic.Count];
-
-                    var logFile = _session.LogFiles.Find(filename);
-                    foreach (ColumnHeader c in lvic) {
-                        items[c.DisplayIndex] = GetListViewColumnText(c, logFile);
-                    }
-
-                    // Set the Tag property of each item to the LogFile it represents
-                    lvis.Add(new ListViewItem(items) { Tag = logFile });
-                }
-            } catch (Exception ex) {
-                var y = ex;
-            }
-
-            lock (_locker)
-                logsListView.Items.AddRange(lvis.ToArray());
-
-            var enabled = lvis.Count > 0;
-            clearLogsToolStripMenuItem.Enabled = enabled;
-            clearLogsContextToolStripMenuItem.Enabled = enabled;
         }
 
         /// <summary>
@@ -827,42 +849,42 @@ namespace Medidata.Lumberjack.UI
         /// 
         /// </summary>
         /// <param name="col"></param>
-        /// <param name="log"></param>
+        /// <param name="logFile"></param>
         /// <returns></returns>
-        private string GetListViewColumnText(ColumnHeader col, LogFile log) {
+        private string GetListViewColumnText(ColumnHeader col, LogFile logFile) {
             SessionField sessionField;
             DateTime dateValue;
 
             switch (col.Text) {
                 case "Filename":
-                    return log.Filename;
+                    return logFile.Filename;
                 case "Size":
-                    return log.Filesize.ToString();
+                    return logFile.Filesize.ToString();
                 case "Format":
-                    return log.SessionFormat != null ? log.SessionFormat.Name : "(unknown)";
+                    return logFile.SessionFormat != null ? logFile.SessionFormat.Name : "(unknown)";
                 case "MD5 Hash":
-                    return log.Md5Hash;
+                    return logFile.Md5Hash;
                 case "Total Entries":
-                    return log.EntryStats.TotalEntries.ToString();
+                    return logFile.EntryStats.TotalEntries.ToString();
                 case "DEBUG":
-                    return log.EntryStats.Debug.ToString();
+                    return logFile.EntryStats.Debug.ToString();
                 case "INFO":
-                    return log.EntryStats.Info.ToString();
+                    return logFile.EntryStats.Info.ToString();
                 case "WARN":
-                    return log.EntryStats.Warn.ToString();
+                    return logFile.EntryStats.Warn.ToString();
                 case "ERROR":
-                    return log.EntryStats.Error.ToString();
+                    return logFile.EntryStats.Error.ToString();
                 case "TRACE":
-                    return log.EntryStats.Trace.ToString();
+                    return logFile.EntryStats.Trace.ToString();
                 case "FATAL":
-                    return log.EntryStats.Fatal.ToString();
+                    return logFile.EntryStats.Fatal.ToString();
                 case "First Entry":
-                    dateValue = log.EntryStats.FirstEntry;
+                    dateValue = logFile.EntryStats.FirstEntry;
                     sessionField = (SessionField)col.Tag;
                     return dateValue != default(DateTime) ? sessionField.FormatValue(dateValue) : "(unknown)";
 
                 case "Last Entry":
-                    dateValue = log.EntryStats.LastEntry;
+                    dateValue = logFile.EntryStats.LastEntry;
                     sessionField = (SessionField)col.Tag;
                     return dateValue != default(DateTime) ? sessionField.FormatValue(dateValue) : "(unknown)";
 
@@ -872,9 +894,8 @@ namespace Medidata.Lumberjack.UI
                         throw new InvalidOperationException("Cannot retrieve value for field '" + sessionField.Name + "': does not exist within 'Filename' context.");
                     
                     // Get the field value and format it based on the info specified by Field
-                    //var formatField = _session.FormatFields.Find(sessionField.Name, FieldContextFlags.Filename);
-                    var value = _session.FieldValues.Find(log, sessionField) ?? "";
-                    return value.ToString();
+                    var value = _session.FieldValues.Find(logFile, sessionField);
+                    return value != null ? value.ToString() : "";
             }
         }
 
@@ -884,10 +905,10 @@ namespace Medidata.Lumberjack.UI
         /// <param name="key">Settings key which contains the columns. Format is: [Text:Width[,...]]</param>
         /// <param name="control">List view control to load the columns for.</param>
         /// <param name="columns">Array of strings indicating each column's text value.</param>
-        /// <param name="containerType">
+        /// <param name="contextFlags">
         /// Enum indicating the container type of the fields which the list view can have columns for.
         /// </param>
-        private void SetListViewColumns(string key, ListView control, string[] columns, FieldContextFlags containerType) {
+        private void SetListViewColumns(string key, ListView control, string[] columns, FieldContextFlags contextFlags) {
             var savedCols = new Dictionary<string, Int32>();
             var newCols = new List<string>();
             string settingVal;
@@ -921,7 +942,7 @@ namespace Medidata.Lumberjack.UI
             // Save the new list view columns and re-load
             SettingsUtil.SetSettingValue(key, String.Join(",", newCols), true);
 
-            LoadListViewColumns(key, control, containerType);
+            LoadListViewColumns(key, control, contextFlags);
         }
 
         /// <summary>
@@ -944,12 +965,12 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="key">Settings key which contains the columns. Format is: [Text:Width[,...]]</param>
         /// <param name="control">List view control to load the columns for.</param>
-        /// <param name="containerType">
+        /// <param name="contextFlags">
         /// Enum indicating the container type of the fields which the list view can have columns for.
         /// </param>
-        private void LoadListViewColumns(string key, ListView control, FieldContextFlags containerType) {
+        private void LoadListViewColumns(string key, ListView control, FieldContextFlags contextFlags) {
             var value = SettingsUtil.GetSettingOrDefault(key);
-            var fields = _session.SessionFields.FindAll(containerType).ToArray();
+            var fields = _session.SessionFields.FindAll(contextFlags).ToArray();
 
             // Reset the current columns for the list view
             control.Columns.Clear();
