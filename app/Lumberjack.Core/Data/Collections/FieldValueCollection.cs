@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.SqlClient;
 using log4net.Appender;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
@@ -9,7 +10,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
     /// <summary>
     /// 
     /// </summary>
-    public sealed class FieldValueCollection : CollectionBase<FieldValueLookup>
+    public sealed class FieldValueCollection : CollectionBase<FieldValue>
     {
         // TODO: implement. Use a seperate bucket for each string length to boost performance
         // when searching for string field values
@@ -71,7 +72,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public override FieldValueLookup this[int index] {
+        public override FieldValue this[int index] {
             get { return _items[index]; }
         }
 
@@ -85,13 +86,22 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="container">The object the value is related to. (ex: LogFile, Entry)</param>
         /// <param name="formatField"></param>
         /// <returns></returns>
-        public object Find(IFieldValueContainer container, FormatField formatField) {
-            if (container == null)
-                throw new ArgumentNullException("container");
+        public object Find(LogFile logFile, FormatField formatField) {
+            if (logFile == null)
+                throw new ArgumentNullException("logFile");
             if (formatField == null)
                 throw new ArgumentNullException("formatField");
-            
-            return Find(container.Id, formatField.DataType, formatField.Id, false);
+
+            return Find(logFile, null, formatField.DataType, formatField.Id, false);
+        }
+
+        public object Find(Entry entry, FormatField formatField) {
+            if (entry == null)
+                throw new ArgumentNullException("entry");
+            if (formatField == null)
+                throw new ArgumentNullException("formatField");
+
+            return Find(entry.LogFile, entry, formatField.DataType, formatField.Id, false);
         }
 
         /// <summary>
@@ -100,13 +110,22 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="container"></param>
         /// <param name="sessionField"></param>
         /// <returns></returns>
-        public object Find(IFieldValueContainer container, SessionField sessionField) {
-            if (container == null)
-                throw new ArgumentNullException("container");
+        public object Find(LogFile logFile, SessionField sessionField) {
+            if (logFile == null)
+                throw new ArgumentNullException("logFile");
             if (sessionField == null)
                 throw new ArgumentNullException("sessionField");
 
-            return Find(container.Id, sessionField.DataType, sessionField.Id, true);
+            return Find(logFile, null, sessionField.DataType, sessionField.Id, true);
+        }
+
+        public object Find(Entry entry, SessionField sessionField) {
+            if (entry == null)
+                throw new ArgumentNullException("entry");
+            if (sessionField == null)
+                throw new ArgumentNullException("sessionField");
+
+            return Find(entry.LogFile, entry, sessionField.DataType, sessionField.Id, true);
         }
 
         /// <summary>
@@ -161,10 +180,11 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="container"></param>
+        /// <param name="logFile"></param>
+        /// <param name="entry"></param>
         /// <param name="formatField"></param>
         /// <param name="value"></param>
-        public void Add<T>(IFieldValueContainer container, FormatField formatField, T value) {
+        public void Add<T>(LogFile logFile, Entry entry, FormatField formatField, T value) {
             var dataType = formatField.DataType;
 
             if (typeof (T) == typeof (string) && dataType != FieldDataTypeEnum.String) {
@@ -172,12 +192,12 @@ namespace Medidata.Lumberjack.Core.Data.Collections
                     DateTime dateValue = new DateTime();
 
                     if (formatField.TryUnformatValue(value.ToString(), ref dateValue))
-                        Add(container, formatField, dateValue);
+                        Add(logFile,entry, formatField, dateValue);
                 } else if (dataType == FieldDataTypeEnum.Integer) {
                     Int32 intValue = 0;
 
                     if (formatField.TryUnformatValue(value.ToString(), ref intValue))
-                        Add(container, formatField, intValue);
+                        Add(logFile,entry, formatField, intValue);
                 }
 
                 return;
@@ -209,20 +229,21 @@ namespace Medidata.Lumberjack.Core.Data.Collections
                 }
             }
 
-            Add(new FieldValueLookup(container.Id, formatField, index));
+            Add(new FieldValue(logFile, entry, formatField, index));
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="container"></param>
+        /// <param name="logFile"></param>
+        /// <param name="entry"></param>
         /// <param name="formatField"></param>
         /// <param name="value"></param>
-        public void Update<T>(IFieldValueContainer container, FormatField formatField, T value) {
-            var containerId = container.Id;
+        public void Update<T>(LogFile logFile, Entry entry, FormatField formatField, T value) {
             var formatFieldId = formatField.Id;
             var changed = false;
+            var id = entry != null ? entry.Id : logFile.Id;
 
             lock (_locker) {
                 var len = _items.Count;
@@ -230,9 +251,11 @@ namespace Medidata.Lumberjack.Core.Data.Collections
                 // Remove the field value lookup if it already exists
                 for (var i = 0; i < len; i++) {
                     var item = _items[i];
-                    if (item.ContainerId != containerId || item.FormatField.Id != formatFieldId) 
+                    if (item.FormatField.Id != formatFieldId) 
                         continue;
-
+                    if ((entry != null && item.Entry != null) ? id != item.Entry.Id : id != item.LogFile.Id)
+                        continue;
+                    
                     _items.Remove(_items[i]);
                     changed = true;
                     break;
@@ -240,9 +263,9 @@ namespace Medidata.Lumberjack.Core.Data.Collections
             }
 
             // Add the field value
-            Add(container, formatField, value);
+            Add(logFile, entry, formatField, value);
 
-            OnValueUpdated(container, formatField, value, changed);
+            OnValueUpdated(entry, formatField, value, changed);
         }
 
         #endregion
@@ -257,7 +280,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <param name="fieldId"></param>
         /// <param name="isSessionId"></param>
         /// <returns></returns>
-        public object Find(int containerId, FieldDataTypeEnum dataType, int fieldId, bool isSessionId) {
+        public object Find(LogFile logFile, Entry entry, FieldDataTypeEnum dataType, int fieldId, bool isSessionId) {
             var len = _items.Count;
 
             for (var i = 0; i < len; i++) {
@@ -276,7 +299,10 @@ namespace Medidata.Lumberjack.Core.Data.Collections
                     id = item.FormatField.Id;
                 }
 
-                if (item.ContainerId == containerId && fieldId == id) 
+                if (fieldId != id)
+                    continue;
+                
+                if ((entry != null && item.Entry != null) ? item.Entry.Id == entry.Id : item.LogFile.Id == logFile.Id) 
                     return GetValue(dataType, item.Index);
             }
 

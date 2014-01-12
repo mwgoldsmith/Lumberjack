@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Collections;
 using Medidata.Lumberjack.Core.Logging;
 
 namespace Medidata.Lumberjack.Core.Processing
@@ -100,9 +101,11 @@ namespace Medidata.Lumberjack.Core.Processing
                                 continue;
 
                             var position = state.BytesProcessed + state.Encoding.GetByteCount(view.Substring(0, match.Index));
-                            var entry = new Entry(logFile, position, (ushort) match.Length);
+                            var entry = new Entry(logFile, position, (ushort) match.Length) { Id = EntryCollection.GetNextId()};
 
                             lastPos = match.Index + match.Length - remaining.Length;
+
+                            // TODO: Special case needs to be implemented for TIMESTAMP field
 
                             if (ParseFormatFields(logFile, entry, formatContext, match)) {
                                 logFile.EntryStats.TotalEntries++;

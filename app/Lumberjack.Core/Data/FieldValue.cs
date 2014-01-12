@@ -8,17 +8,19 @@ namespace Medidata.Lumberjack.Core.Data
     /// <summary>
     /// 
     /// </summary>
-    public struct FieldValueLookup
+    public struct FieldValue
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="containerId"></param>
+        /// <param name="logFile"></param>
+        /// <param name="entry"></param>
         /// <param name="formatField"></param>
         /// <param name="index"></param>
-        public FieldValueLookup(long containerId, FormatField formatField, int index)
+        public FieldValue(LogFile logFile, Entry entry, FormatField formatField, int index)
             : this() {
-            ContainerId = containerId;
+            LogFile = logFile;
+            Entry = entry;
             FormatField = formatField;
             Index = index;
         }
@@ -26,7 +28,12 @@ namespace Medidata.Lumberjack.Core.Data
         /// <summary>
         /// 
         /// </summary>
-        public long ContainerId { get; set; }
+        public LogFile LogFile { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Entry Entry { get; set; }
 
         /// <summary>
         /// 

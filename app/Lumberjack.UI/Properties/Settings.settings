@@ -26,5 +26,8 @@
     <Setting Name="EntriesListViewColumns" Type="System.String" Scope="User">
       <Value Profile="(Default)">Timestamp:100,Level:100,Message:200</Value>
     </Setting>
+    <Setting Name="SplitterDistance" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">290</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

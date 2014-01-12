@@ -335,7 +335,7 @@ namespace Medidata.Lumberjack.UI
                         // TODO: this log does not contains a format field linked to the selected session field. Notify user
                     } else {
                         // Add value if non-existant; else, update
-                        _session.FieldValues.Update(logFile, formatField, value);
+                        _session.FieldValues.Update(logFile, null, formatField, value);
                     }
                 }
             } else {

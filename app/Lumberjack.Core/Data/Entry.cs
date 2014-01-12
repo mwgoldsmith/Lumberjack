@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Medidata.Lumberjack.Core.Data
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Entry : IFieldValueContainer
     {
+        #region Initializers
+
         /// <summary>
         /// 
         /// </summary>
@@ -18,6 +20,10 @@ namespace Medidata.Lumberjack.Core.Data
             Length = length;
             Position = position;
         }
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// 
@@ -38,6 +44,13 @@ namespace Medidata.Lumberjack.Core.Data
         /// 
         /// </summary>
         public long Position { get; private set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public DateTime Timestamp { get; set; }
+
+        #endregion
 
         #region ToString override for debugging
 
@@ -50,11 +63,13 @@ namespace Medidata.Lumberjack.Core.Data
                 "Id = {0}, " +
                 "Length = {1}, " +
                 "LogFile = {2}, " +
-                "Position = {3} }}",
+                "Position = {3}, " +
+                "Timestamp = {4} }}",
                 Id,
                 Length,
                 LogFile,
-                Position);
+                Position,
+                Timestamp);
         }
 
         #endregion

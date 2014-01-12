@@ -106,7 +106,7 @@
     <Compile Include="Data\FieldBase.cs" />
     <Compile Include="Data\FieldContextFlags.cs" />
     <Compile Include="Data\FieldDataTypeEnum.cs" />
-    <Compile Include="Data\FieldValueLookup.cs" />
+    <Compile Include="Data\FieldValue.cs" />
     <Compile Include="Data\FormatContextEnum.cs" />
     <Compile Include="Data\FormatField.cs" />
     <Compile Include="Data\IFieldValueContainer.cs" />

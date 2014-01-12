@@ -64,7 +64,7 @@ namespace Medidata.Lumberjack.Core.Processing
 
                 // Parse all filename fields for this log file. If successful, no need to check
                 // other formats
-                if (!ParseFormatFields(logFile, logFile, contextFormat, match)) {
+                if (!ParseFormatFields(logFile, null, contextFormat, match)) {
                     break;
                 }
 

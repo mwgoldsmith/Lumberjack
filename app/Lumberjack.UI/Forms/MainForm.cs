@@ -22,6 +22,8 @@ namespace Medidata.Lumberjack.UI
         private const string EntriesListViewColumnsKey = "EntriesListViewColumns";
         private const int MaxMessageLines = 4096;
 
+        private static readonly object _logLocker = new object();
+        private static readonly object _entryLocker = new object();
         private static readonly object _locker = new object();
 
         private readonly Logger _logger;
@@ -65,10 +67,14 @@ namespace Medidata.Lumberjack.UI
             _session.LogFiles.ItemUpdated += LogFiles_ItemUpdated;
             _session.LogFiles.ItemRemoved += LogFiles_ItemRemoved;
             _session.LogFiles.ItemAdded += LogFiles_ItemAdded;
+            _session.Entries.ItemAdded += Entries_ItemAdded;
+            _session.Entries.ItemUpdated += Entries_ItemUpdated;
             _session.ProcessController.ProgressChanged += ProcessController_ProgressChanged;
             _session.ProcessController.LogCompleted += ProcessController_LogCompleted;
             _session.Message += UserSession_Message;
             _session.LoadConfig();
+
+            mainSplitContainer.SplitterDistance = Settings.Default.SplitterDistance;
 
             ShowMessages((bool)Settings.Default["ShowMessages"]);
             ShowLogFiles((bool)Settings.Default["ShowLogFiles"]);
@@ -90,6 +96,8 @@ namespace Medidata.Lumberjack.UI
             _session.LogFiles.ItemUpdated -= LogFiles_ItemUpdated;
             _session.LogFiles.ItemRemoved -= LogFiles_ItemRemoved;
             _session.LogFiles.ItemAdded -= LogFiles_ItemAdded;
+            _session.Entries.ItemAdded -= Entries_ItemAdded;
+            _session.Entries.ItemUpdated -= Entries_ItemUpdated;
             _session.ProcessController.ProgressChanged -= ProcessController_ProgressChanged;
             _session.ProcessController.LogCompleted -= ProcessController_LogCompleted;
             _session.Message -= UserSession_Message;
@@ -470,7 +478,37 @@ namespace Medidata.Lumberjack.UI
             logPropertiesToolStripMenuItem.Enabled = selections;
             logPropertiesContextToolStripMenuItem.Enabled = selections;
         }
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mainSplitContainer_SplitterMoved(object sender, SplitterEventArgs e) {
+            if (!Visible)
+                return;
+            Settings.Default.SplitterDistance = e.SplitY;
+            Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void entryNavigatorToolStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {
+            switch (e.ClickedItem.Name) {
+                case "moveFirstItemToolStripButton":
+                    break;
+                case "movePreviousItemToolStripButton":
+                    break;
+                case "moveNextItemToolStripButton":
+                    break;
+                case "moveLastItemToolStripButton":
+                    break;
+            }
+        }
+
         #endregion
 
         #region Non-UI event handlers
@@ -494,21 +532,20 @@ namespace Medidata.Lumberjack.UI
             if (e.Container is LogFile) 
                 RefreshLogListItem(logsListView, e.Container as LogFile);
         }
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
-        void LogFiles_ItemAdded<T>(object source, CollectionItemEventArgs<T> e) where T : LogFile {
+        void LogFiles_ItemAdded(object source, CollectionItemEventArgs<LogFile> e) {
             var logFiles = e.Items;
             var lvis = new List<ListViewItem>(logFiles.Length);
 
-            this.Invoke(() =>
-                {
+            this.Invoke(() => {
                     bool enabled;
 
-                    lock (_locker) {
+
+                    lock (_logLocker) {
                         var lvic = logsListView.Columns;
 
                         // Create list view items for the log files and add to the control
@@ -519,7 +556,7 @@ namespace Medidata.Lumberjack.UI
                                 items[c.DisplayIndex] = GetListViewColumnText(c, logFile);
 
                             // Set the Tag property of each item to the LogFile it represents
-                            lvis.Add(new ListViewItem(items) {Tag = logFile});
+                            lvis.Add(new ListViewItem(items) { Tag = logFile });
                         }
 
                         logsListView.Items.AddRange(lvis.ToArray());
@@ -538,17 +575,17 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
-        void LogFiles_ItemRemoved<T>(object source, CollectionItemEventArgs<T> e) where T : LogFile {
+        void LogFiles_ItemRemoved(object source, CollectionItemEventArgs<LogFile> e) {
             var logFiles = e.Items;
 
-            this.Invoke(() =>
-                {
+            this.Invoke(() => {
                     bool isEmpty;
-                    lock (_locker) {
+
+                    lock (_logLocker) {
                         var items = logsListView.Items;
 
                         for (var i = 0; i < items.Count; i++) {
-                            if (logFiles.Any(x =>x.Id == ((LogFile) items[i].Tag).Id))
+                            if (logFiles.Any(x => x.Id == ((LogFile)items[i].Tag).Id))
                                 items.RemoveAt(i--);
                         }
 
@@ -565,7 +602,7 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
-        private void LogFiles_ItemUpdated<T>(object source, CollectionItemEventArgs<T> e) where T : LogFile {
+        void LogFiles_ItemUpdated(object source, CollectionItemEventArgs<LogFile> e) {
             e.Items.ToList().ForEach(x => RefreshLogListItem(logsListView, x));
             _session.ProcessController.Start();
         }
@@ -573,31 +610,40 @@ namespace Medidata.Lumberjack.UI
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="source"></param>
         /// <param name="e"></param>
-        private void messageTimer_Tick(object sender, EventArgs e) {
-            var text = "";
-            int length;
+        void Entries_ItemAdded(object source, CollectionItemEventArgs<Entry> e) {
+            var entries = e.Items;
+            var lvis = new List<ListViewItem>(entries.Length);
+            /*
+            this.Invoke(() => {
+                lock (_entryLocker) {
+                    var lvic = entriesListView.Columns;
 
-            lock (_locker) {
-                length = _messageBuffer.Length;
-                if (length > 0) {
-                    text = _messageBuffer.ToString();
-                    _messageBuffer.Clear();
+                    // Create list view items for the log files and add to the control
+                    foreach (var entry in entries) {
+                        var items = new string[lvic.Count];
+
+                        foreach (ColumnHeader c in lvic)
+                            items[c.DisplayIndex] = GetListViewColumnText(c, entry);
+
+                        // Set the Tag property of each item to the LogFile it represents
+                        lvis.Add(new ListViewItem(items) { Tag = entry });
+                    }
+
+                    countItemToolStripButton.Text = "of " + _session.Entries.Count;
+                    entriesListView.Items.AddRange(lvis.ToArray());
                 }
-            }
+            }, false);*/
+        }
 
-            if (length == 0 || String.IsNullOrEmpty(text))
-                return;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
+        void Entries_ItemUpdated(object source, CollectionItemEventArgs<Entry> e) {
 
-            messagesTextBox.Text += text;
-
-            if (messagesTextBox.Lines.Length > MaxMessageLines) {
-                messagesTextBox.ClearTopLines(MaxMessageLines - 100);
-            }
-
-            messagesTextBox.SelectionStart = messagesTextBox.Text.Length;
-            messagesTextBox.ScrollToCaret();
         }
 
         /// <summary>
@@ -647,24 +693,6 @@ namespace Medidata.Lumberjack.UI
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="metrics"></param>
-        /// <param name="processType"></param>
-        /// <param name="completed"></param>
-        /// <returns></returns>
-        private static string GetStatusStripText(EngineMetrics metrics, ProcessTypeEnum processType, bool completed) {
-            return String.Format("{5}: {6} {0} of {1} logs ({2} of {3} bytes){4}",
-                                 metrics.ProcessedLogs,
-                                 metrics.TotalLogs,
-                                 metrics.ProcessedBytes,
-                                 metrics.TotalBytes,
-                                 completed ? "" : (" " + ((float) ((float) metrics.ProcessedBytes/(float) metrics.TotalBytes)*100) + "%"),
-                                 processType,
-                                 completed ? "Completed" : "Processed");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="sender"></param>
         /// <param name="colIndex"></param>
         /// <param name="x"></param>
@@ -707,6 +735,7 @@ namespace Medidata.Lumberjack.UI
                         Int32.TryParse(textX, out intX);
                         Int32.TryParse(textY, out intY);
 
+
                         return comparer.Compare(intX, intY);
 
                     default:
@@ -733,6 +762,36 @@ namespace Medidata.Lumberjack.UI
             }
 
             return comparer.Compare(textX, textY);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void messageTimer_Tick(object sender, EventArgs e) {
+            var text = "";
+            int length;
+
+            lock (_locker) {
+                length = _messageBuffer.Length;
+                if (length > 0) {
+                    text = _messageBuffer.ToString();
+                    _messageBuffer.Clear();
+                }
+            }
+
+            if (length == 0 || String.IsNullOrEmpty(text))
+                return;
+
+            messagesTextBox.Text += text;
+
+            if (messagesTextBox.Lines.Length > MaxMessageLines) {
+                messagesTextBox.ClearTopLines(MaxMessageLines - 100);
+            }
+
+            messagesTextBox.SelectionStart = messagesTextBox.Text.Length;
+            messagesTextBox.ScrollToCaret();
         }
 
         #endregion
@@ -776,7 +835,7 @@ namespace Medidata.Lumberjack.UI
         private void RemoveLogFiles<T>(T lvItemCollection) where T : IList, ICollection {
             LogFile[] logFiles;
 
-            lock (_locker) {
+            lock (_logLocker) {
                 var len = lvItemCollection.Count;
 
                 logFiles = new LogFile[len];
@@ -898,6 +957,25 @@ namespace Medidata.Lumberjack.UI
                     return value != null ? value.ToString() : "";
             }
         }
+       
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="entry"></param>
+        /// <returns></returns>
+        private string GetListViewColumnText(ColumnHeader col, Entry entry) {
+            switch (col.Text) {
+                case "Timestamp":
+                //break;
+                default:
+                    var sessionField = (SessionField)col.Tag;
+
+                    // Get the field value and format it based on the info specified by Field
+                    var value = _session.FieldValues.Find(entry, sessionField);
+                    return value != null ? value.ToString() : "";
+            }
+        }
 
         /// <summary>
         /// 
@@ -1002,10 +1080,28 @@ namespace Medidata.Lumberjack.UI
             foreach (ListViewItem item in control.Items) {
                 RefreshLogListItem(control, item);
             }
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="metrics"></param>
+        /// <param name="processType"></param>
+        /// <param name="completed"></param>
+        /// <returns></returns>
+        private static string GetStatusStripText(EngineMetrics metrics, ProcessTypeEnum processType, bool completed) {
+            return String.Format("{5}: {6} {0} of {1} logs ({2} of {3} bytes){4}",
+                                 metrics.ProcessedLogs,
+                                 metrics.TotalLogs,
+                                 metrics.ProcessedBytes,
+                                 metrics.TotalBytes,
+                                 completed ? "" : (" " + ((float)((float)metrics.ProcessedBytes / (float)metrics.TotalBytes) * 100) + "%"),
+                                 processType,
+                                 completed ? "Completed" : "Processed");
         }
 
         #endregion
-
 
     }
 }

@@ -193,24 +193,17 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="log"></param>
-        /// <param name="container"></param>
+        /// <param name="logFile"></param>
+        /// <param name="entry"></param>
         /// <param name="contextFormat"></param>
         /// <param name="match"></param>
         /// <returns></returns>
-        protected bool ParseFormatFields(LogFile log, IFieldValueContainer container, ContextFormat contextFormat, Match match) {
+        protected bool ParseFormatFields(LogFile logFile, Entry entry, ContextFormat contextFormat, Match match) {
             var fields = contextFormat.Fields;
 
             if (Logger.IsTraceEnabled) {
-                var containerStr = "";
-
-                if (container is LogFile) {
-                    containerStr = (container as LogFile).ToString();
-                } else if (container is Entry) {
-                    containerStr = (container as Entry).ToString();
-                }
-
-                var msg = String.Format("Entering. Args: {{ logFile = {0}, container = {1}, contextFormat = {2}, match = {3} (chars) }}", log, containerStr, contextFormat, match.Length);
+                var msg = String.Format("Entering. Args: {{ logFile = {0}, entry = {1}, contextFormat = {2}, match = {3} (chars) }}"
+                    , logFile, entry, contextFormat, match.Length);
 
                 _logger.Trace("EB-PFF-001", msg);
             }
@@ -240,11 +233,11 @@ namespace Medidata.Lumberjack.Core.Processing
                         _logger.Trace("EB-PFF-002", "Processing content format context");
 
                     // Parse the log entry content to retreive additional metadata
-                    var contentContext = log.SessionFormat.Contexts[FormatContextEnum.Content];
-                    var success = ParseAllFieldMatches(log, container, contentContext, value);
+                    var contentContext = logFile.SessionFormat.Contexts[FormatContextEnum.Content];
+                    var success = ParseAllFieldMatches(logFile, entry, contentContext, value);
 
                     if (!success) {
-                        OnDebug(String.Format("Failed to process CONTENT for log file {0}.", log.Filename));
+                        OnDebug(String.Format("Failed to process CONTENT for log file {0}.", logFile.Filename));
                         return false;
                     }
                 } else {
@@ -264,29 +257,29 @@ namespace Medidata.Lumberjack.Core.Processing
                         if (field.Name.Equals("LEVEL")) {
                             switch (value.ToUpper()) {
                                 case "TRACE":
-                                    log.EntryStats.Trace++;
+                                    logFile.EntryStats.Trace++;
                                     break;
                                 case "DEBUG":
-                                    log.EntryStats.Debug++;
+                                    logFile.EntryStats.Debug++;
                                     break;
                                 case "INFO":
-                                    log.EntryStats.Info++;
+                                    logFile.EntryStats.Info++;
                                     break;
                                 case "WARN":
-                                    log.EntryStats.Warn++;
+                                    logFile.EntryStats.Warn++;
                                     break;
                                 case "ERROR":
-                                    log.EntryStats.Error++;
+                                    logFile.EntryStats.Error++;
                                     break;
                                 case "FATAL":
-                                    log.EntryStats.Fatal++;
+                                    logFile.EntryStats.Fatal++;
                                     break;
                             }    
                         }
 
 
                         if (field.Filterable) {
-                            SessionInstance.FieldValues.Add(container, field, value);
+                            SessionInstance.FieldValues.Add(logFile, entry, field, value);
                            // OnError("Failed to set field '" + field.Name + "' to value '" + value + "'");
                            // return false;
                         }
@@ -308,15 +301,15 @@ namespace Medidata.Lumberjack.Core.Processing
         /// 
         /// </summary>
         /// <param name="logFile"></param>
-        /// <param name="container"></param>
+        /// <param name="entry"></param>
         /// <param name="contextFormat"></param>
         /// <param name="text"></param>
         /// <returns></returns>
-        protected bool ParseAllFieldMatches(LogFile logFile, IFieldValueContainer container, ContextFormat contextFormat, string text) {
+        protected bool ParseAllFieldMatches(LogFile logFile, Entry entry, ContextFormat contextFormat, string text) {
             var matches = contextFormat.Regex.Matches(text);
 
             foreach (Match match in matches) {
-                if (match.Success && !ParseFormatFields(logFile, container, contextFormat, match)) {
+                if (match.Success && !ParseFormatFields(logFile, entry, contextFormat, match)) {
                     return false;
                 }
             }
