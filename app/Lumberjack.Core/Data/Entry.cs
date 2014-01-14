@@ -5,7 +5,7 @@ namespace Medidata.Lumberjack.Core.Data
     /// <summary>
     /// 
     /// </summary>
-    public class Entry : IFieldValueContainer
+    public class Entry : IFieldValueComponent
     {
         #region Initializers
 

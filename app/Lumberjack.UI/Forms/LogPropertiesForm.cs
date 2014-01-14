@@ -727,16 +727,17 @@ namespace Medidata.Lumberjack.UI
                     // Get the value of the field to be used for the ListItem
                     // Only use the field value if every logfile which has a format field
                     // linked to the same session field also has the same field value.
-                    var value = _session.FieldValues.Find(logFile, formatField);
+                    var value = _session.FieldValues.Find(logFile, null,formatField);
                     if (value == null || !TestAllFieldValues(logFiles, sessionField, value.ToString()))
                         value = null;
 
+                    var fieldValues = _session.FieldValues.FindAll(sessionField).Distinct();
                     result.Add(new ListItem(sessionField.Display)
                         {
                             Data = sessionField,
                             Value = value,
                             Details = GetSessionFieldText(sessionField, new String(' ', 2)),
-                            ComboDataSource = _session.FieldValues.FindAll(sessionField).Distinct().ToList(),
+                            ComboDataSource = fieldValues.ToList(),
                             Readonly = false
                         });
                 }
@@ -777,7 +778,7 @@ namespace Medidata.Lumberjack.UI
                     // Get the value of the field to be used for the ListItem
                     // Only use the field value if every logfile which has a format field
                     // linked to the same session field also has the same field value.
-                    var value = _session.FieldValues.Find(logFile, f);
+                    var value = _session.FieldValues.Find(logFile, null,f);
                     if (value == null || !TestAllFieldValues(logFiles, f, value.ToString()))
                         value = null;
 
@@ -815,7 +816,7 @@ namespace Medidata.Lumberjack.UI
                 if (formatField == null)
                     continue;
 
-                var fieldValue = _session.FieldValues.Find(logFile, formatField);
+                var fieldValue = _session.FieldValues.Find(logFile, null,formatField);
                 if (fieldValue == null || !value.Equals(fieldValue.ToString()))
                     return false;
             }
@@ -841,7 +842,7 @@ namespace Medidata.Lumberjack.UI
                 if (!sessionFormat.Contexts[FormatContextEnum.Filename].Fields.Contains(formatField))
                     continue;
 
-                var fieldValue = _session.FieldValues.Find(logFile, formatField);
+                var fieldValue = _session.FieldValues.Find(logFile, null,formatField);
                 if (fieldValue == null || !value.Equals(fieldValue.ToString()))
                     return false;
             }
@@ -1110,7 +1111,7 @@ namespace Medidata.Lumberjack.UI
                     formatField.Default,
                     formatField.Filterable,
                     formatField.FormatPattern,
-                    formatField.Type,
+                    formatField.Context,
                     formatField.SessionFormat.Name);
         }
 

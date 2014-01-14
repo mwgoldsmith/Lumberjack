@@ -7,7 +7,7 @@ namespace Medidata.Lumberjack.Core.Data
     /// <summary>
     /// 
     /// </summary>
-    public class SessionField : FieldBase
+    public sealed class SessionField : FieldBase, IFieldValueComponent
     {
         #region Priviate fields
 
@@ -31,10 +31,22 @@ namespace Medidata.Lumberjack.Core.Data
             DataType = fieldElement.DataType;
             Default = fieldElement.Default;
             Display = fieldElement.Display;
-            base.Filterable = fieldElement.Filterable;
+            Filterable = fieldElement.Filterable;
             FormatPattern = fieldElement.FormatPattern;
             Name = fieldElement.Name;
             Required = fieldElement.Required;
+
+            switch (DataType) {
+                case FieldDataTypeEnum.DateTime:
+                    Type = typeof(DateTime);
+                    break;
+                case FieldDataTypeEnum.Integer:
+                    Type = typeof(Int32);
+                    break;
+                case FieldDataTypeEnum.String:
+                    Type = typeof (string);
+                    break;
+            }
 
             var flags = FieldContextFlags.None;
 
@@ -59,7 +71,12 @@ namespace Medidata.Lumberjack.Core.Data
         /// <summary>
         /// 
         /// </summary>
-        public byte Id { get; private set; }
+        public int Id { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Type Type { get; private set; }
 
         #endregion
 

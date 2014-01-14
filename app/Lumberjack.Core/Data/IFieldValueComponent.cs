@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Medidata.Lumberjack.Core.Data
 {
-    public interface IFieldValueContainer
+    public interface IFieldValueComponent
     {
-        int Id { get; set; }
+        int Id { get; }
     }
 }

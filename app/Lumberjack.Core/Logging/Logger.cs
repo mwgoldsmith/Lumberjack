@@ -33,6 +33,13 @@ namespace Medidata.Lumberjack.Core.Logging
         private static bool _isInitialized;
         private static Logger _instance;
 
+        private static bool _isTraceEnabled;
+        private static bool _isDebugEnabled;
+        private static bool _isInfoEnabled = true;
+        private static bool _isWarnEnabled = true;
+        private static bool _isErrorEnabled = true;
+        private static bool _isFatalEnabled = true;
+
         #endregion
 
         #region Initializers
@@ -43,13 +50,6 @@ namespace Medidata.Lumberjack.Core.Logging
         static Logger() {
             _type = MethodBase.GetCurrentMethod().DeclaringType;
             _isInitialized = false;
-
-            IsTraceEnabled = true;
-            IsDebugEnabled = true;
-            IsInfoEnabled = true;
-            IsWarnEnabled = true;
-            IsErrorEnabled = true;
-            IsFatalEnabled = true;
         }
 
         /// <summary>
@@ -117,32 +117,55 @@ namespace Medidata.Lumberjack.Core.Logging
         /// <summary>
         /// 
         /// </summary>
-        public static bool IsTraceEnabled { get; set; }
+        public static bool IsFineEnabled { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool IsDebugEnabled { get; set; }
+        public static bool IsTraceEnabled {
+            get { return _isTraceEnabled || IsFineEnabled; }
+            set { _isTraceEnabled = value; }
+        }
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool IsInfoEnabled { get; set; }
+        public static bool IsDebugEnabled {
+            get { return _isDebugEnabled || IsFineEnabled; }
+            set { _isDebugEnabled = value; }
+        }
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool IsWarnEnabled { get; set; }
+        public static bool IsInfoEnabled {
+            get { return _isInfoEnabled || IsFineEnabled; }
+            set { _isInfoEnabled = value; }
+        }
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool IsErrorEnabled { get; set; }
+        public static bool IsWarnEnabled {
+            get { return _isWarnEnabled || IsFineEnabled; }
+            set { _isWarnEnabled = value; }
+        }
 
         /// <summary>
         /// 
         /// </summary>
-        public static bool IsFatalEnabled { get; set; }
+        public static bool IsErrorEnabled {
+            get { return _isErrorEnabled || IsFineEnabled; }
+            set { _isErrorEnabled = value; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool IsFatalEnabled {
+            get { return _isFatalEnabled || IsFineEnabled; }
+            set { _isFatalEnabled = value; }
+        }
 
         #endregion
 
@@ -179,23 +202,6 @@ namespace Medidata.Lumberjack.Core.Logging
             }
 
             _isInitialized = true;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static string GetTraceDetails(int depth) {
-            var frame = new StackFrame(depth, true);
-            var method = frame.GetMethod();
-
-            if (method.DeclaringType == null)
-                return "";
-
-            return method.DeclaringType.UnderlyingSystemType.FullName
-                   + "." + method.Name + "() : "
-                   + frame.GetFileLineNumber();
         }
 
         #endregion
@@ -349,9 +355,22 @@ namespace Medidata.Lumberjack.Core.Logging
             _logger.Log(_type, Level.Trace, (caller != null ? caller + " - " : "") + message + (ex != null ? "\r\n" : ""), ex);
         }
 
-        #endregion
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static string GetTraceDetails(int depth) {
+            var frame = new StackFrame(depth, true);
+            var method = frame.GetMethod();
 
-        #region Protected override methods
+            if (method.DeclaringType == null)
+                return "";
+
+            return method.DeclaringType.UnderlyingSystemType.FullName
+                   + "." + method.Name + "() : "
+                   + frame.GetFileLineNumber();
+        }
 
         #endregion
     }

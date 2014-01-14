@@ -4,8 +4,10 @@ using Medidata.Lumberjack.UI.Properties;
 
 namespace Medidata.Lumberjack.UI
 {
+    [Obsolete]
     internal static class SettingsUtil
     {
+        [Obsolete]
         public static bool IsSettingKey(string key) {
             var props = Settings.Default.Properties;
             var array = new SettingsProperty[props.Count];
@@ -20,11 +22,13 @@ namespace Medidata.Lumberjack.UI
             return false;
         }
 
+        [Obsolete]
         public static void SetSettingValue(string key, string value) {
             SetSettingValue(key, value, false);
 
         }
 
+        [Obsolete]
         public static void SetSettingValue(string key, string value, bool autoSave) {
             if (!IsSettingKey(key))
                 return;
@@ -35,10 +39,12 @@ namespace Medidata.Lumberjack.UI
                 Settings.Default.Save();
         }
 
+        [Obsolete]
         public static string GetSettingOrDefault(string key) {
             return GetSettingOrDefault(key, false);
         }
 
+        [Obsolete]
         public static string GetSettingOrDefault(string key, bool autoSave) {
             if (!IsSettingKey(key))
                 return null;
@@ -58,6 +64,7 @@ namespace Medidata.Lumberjack.UI
             return value;
         }
 
+        [Obsolete]
         public static string RestoreDefaultSetting(string key) {
             if (!IsSettingKey(key))
                 return null;
@@ -76,4 +83,3 @@ namespace Medidata.Lumberjack.UI
         }
     }
 }
-

@@ -111,7 +111,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntryPaging.cs" />
+    <Compile Include="EntryView.cs" />
     <Compile Include="Forms\AboutForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -188,7 +188,8 @@
     <Compile Include="Forms\SessionPropertiesForm.Designer.cs">
       <DependentUpon>SessionPropertiesForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SettingsUtil.cs" />
+    <Compile Include="Obsolete\SettingsUtil.cs" />
+    <Compile Include="SettingsManager.cs" />
     <EmbeddedResource Include="Forms\LogPropertiesForm.resx">
       <DependentUpon>LogPropertiesForm.cs</DependentUpon>
     </EmbeddedResource>

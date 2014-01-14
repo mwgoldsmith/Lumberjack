@@ -110,7 +110,7 @@ namespace Medidata.Lumberjack.UI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Timestamp:100,Level:100,Message:200")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Format:100,Timestamp:100,Level:100,Message:200")]
         public string EntriesListViewColumns {
             get {
                 return ((string)(this["EntriesListViewColumns"]));
@@ -129,6 +129,78 @@ namespace Medidata.Lumberjack.UI.Properties {
             }
             set {
                 this["SplitterDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool TraceLoggingEnabled {
+            get {
+                return ((bool)(this["TraceLoggingEnabled"]));
+            }
+            set {
+                this["TraceLoggingEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DebugLoggingEnabled {
+            get {
+                return ((bool)(this["DebugLoggingEnabled"]));
+            }
+            set {
+                this["DebugLoggingEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool InfoLoggingEnabled {
+            get {
+                return ((bool)(this["InfoLoggingEnabled"]));
+            }
+            set {
+                this["InfoLoggingEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool WarnLoggingEnabled {
+            get {
+                return ((bool)(this["WarnLoggingEnabled"]));
+            }
+            set {
+                this["WarnLoggingEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ErrorLoggingEnabled {
+            get {
+                return ((bool)(this["ErrorLoggingEnabled"]));
+            }
+            set {
+                this["ErrorLoggingEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool FineLoggingEnabled {
+            get {
+                return ((bool)(this["FineLoggingEnabled"]));
+            }
+            set {
+                this["FineLoggingEnabled"] = value;
             }
         }
     }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Medidata.Lumberjack.Core.Data;
 using Medidata.Lumberjack.Core.Data.Collections;
 using Medidata.Lumberjack.Core.Logging;
@@ -17,6 +19,7 @@ namespace Medidata.Lumberjack.Core.Processing
     {
         #region Constants
 
+        private const FormatContextEnum ContextType = FormatContextEnum.Entry;
         private const int BufferSize = 1024 * 8;
 
         #endregion
@@ -64,14 +67,14 @@ namespace Medidata.Lumberjack.Core.Processing
             var success = false;
 
             logFile.EntryParseStatus = EngineStatusEnum.Processing;
-            
+
             if (logFile.Filesize == 0) {
                 // Log file is 0 bytes, consider this a success and go on with our life
                 return true;
             }
 
             var state = new EngineState();
-            var formatContext = logFile.SessionFormat.Contexts[FormatContextEnum.Entry];
+            var regex = logFile.SessionFormat.Contexts[ContextType].Regex;
 
             try {
                 using (var fs = new FileStream(logFile.FullFilename, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.SequentialScan))
@@ -80,19 +83,22 @@ namespace Medidata.Lumberjack.Core.Processing
 
                     var buffer = new Char[BufferSize];
                     var entries = new List<Entry>(1024);
+                    var values = new List<EntryFieldValue>(4096);
                     var remaining = "";
 
                     OnProgressChanged(engineMetrics, logFile);
 
                     while (!IsStopping) {
-                        var count = sr.Read(buffer, 0, (int)(Math.Min(BufferSize, state.TotalBytes - state.BytesRead)));
+                        var count = sr.Read(buffer, 0, (int) (Math.Min(BufferSize, state.TotalBytes - state.BytesRead)));
                         if (count == 0)
                             break;
 
                         var text = new string(buffer, 0, count);
                         var view = String.Concat(remaining, text);
                         var lastPos = 0;
-                        var matches = formatContext.Regex.Matches(view);
+                        var sw = new Stopwatch();
+                        sw.Start();
+                        var matches = regex.Matches(view);
 
                         for (var i = 0; i < matches.Count && !IsStopping; i++) {
                             var match = matches[i];
@@ -101,13 +107,15 @@ namespace Medidata.Lumberjack.Core.Processing
                                 continue;
 
                             var position = state.BytesProcessed + state.Encoding.GetByteCount(view.Substring(0, match.Index));
-                            var entry = new Entry(logFile, position, (ushort) match.Length) { Id = EntryCollection.GetNextId()};
+                            var entry = new Entry(logFile, position, (ushort) match.Length) {Id = EntryCollection.GetNextId()};
 
                             lastPos = match.Index + match.Length - remaining.Length;
 
                             // TODO: Special case needs to be implemented for TIMESTAMP field
 
-                            if (ParseFormatFields(logFile, entry, formatContext, match)) {
+                            var fieldValues = FieldValueFactory.MatchEntryValues(entry, ContextType, match, FieldValuePredicate);
+                            if (fieldValues != null) {
+                                values.AddRange(fieldValues);
                                 logFile.EntryStats.TotalEntries++;
                                 entries.Add(entry);
                             } else {
@@ -127,10 +135,22 @@ namespace Medidata.Lumberjack.Core.Processing
                         engineMetrics.ProcessedBytes += state.Encoding.GetByteCount(text);
                         AddToMetrics(entries.ToArray(), ref engineMetrics);
 
-                        SessionInstance.Entries.Add(entries.ToArray());
-                        entries.Clear();
+                        var metrics = engineMetrics;
+                        var vals = values.ToArray();
+                        var ents = entries.ToArray();
+                        
+                        
+                        //Task.Factory.StartNew(() => {
+                               SessionInstance.FieldValues.Add(vals);
+                               SessionInstance.Entries.Add(ents);
+                               OnProgressChanged(metrics, logFile);
+                        //   });
 
-                        OnProgressChanged(engineMetrics, logFile);
+                        entries.Clear();
+                        values.Clear();
+
+                        sw.Stop();
+                        Debug.WriteLine(sw.ElapsedMilliseconds.ToString());
 
                         //len = log.Entries.Length;
                         //log.EntryStats.LastEntry = len > 0 ? log.Entries[len - 1].Timestamp : DateTime.MinValue;
@@ -190,9 +210,47 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="logFieldValue"></param>
+        /// <returns></returns>
+        private static bool FieldValuePredicate(LogFieldValue logFieldValue) {
+            var logFile = logFieldValue.LogFile;
+            var formatField = logFieldValue.FormatField;
+
+            if (!formatField.Filterable && formatField.DataType == FieldDataTypeEnum.String)
+                return false;
+
+            if (formatField.Name.Equals("LEVEL")) {
+                switch (logFieldValue.ToString().ToUpper()) {
+                    case "TRACE":
+                        logFile.EntryStats.Trace++;
+                        break;
+                    case "DEBUG":
+                        logFile.EntryStats.Debug++;
+                        break;
+                    case "INFO":
+                        logFile.EntryStats.Info++;
+                        break;
+                    case "WARN":
+                        logFile.EntryStats.Warn++;
+                        break;
+                    case "ERROR":
+                        logFile.EntryStats.Error++;
+                        break;
+                    case "FATAL":
+                        logFile.EntryStats.Fatal++;
+                        break;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="entries"></param>
         /// <param name="metrics"></param>
-        private void AddToMetrics(Entry[] entries, ref EngineMetrics metrics) {
+        private static void AddToMetrics(Entry[] entries, ref EngineMetrics metrics) {
             ushort size = 0;
             var len = entries.Length;
 
@@ -202,7 +260,7 @@ namespace Medidata.Lumberjack.Core.Processing
             if (metrics.ProcessedEntries > 0) {
                 metrics.AvgEntrySize = (ushort) ((metrics.AvgEntrySize + size)/(len + 1));
             } else {
-                metrics.AvgEntrySize = (ushort) (size / len);
+                metrics.AvgEntrySize = (ushort)( len == 0 ? 0 : (size / len));
             }
 
             metrics.ProcessedEntries += len;

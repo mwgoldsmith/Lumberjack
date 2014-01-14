@@ -61,7 +61,7 @@ namespace Medidata.Lumberjack.Core
         /// 
         /// </summary>
         public FieldConfigurator FieldConfig { get; private set; }
-
+        
         /// <summary>
         /// 
         /// </summary>

@@ -9,7 +9,7 @@ using Medidata.Lumberjack.Core.Processing;
 
 namespace Medidata.Lumberjack.Core.Data
 {
-    public class LogFile : IFieldValueContainer
+    public class LogFile : IFieldValueComponent
     {
         #region Nested classes
 

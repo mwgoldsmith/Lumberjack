@@ -5,6 +5,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Medidata.Lumberjack.Core.Data;
 using Medidata.Lumberjack.Core.Logging;
 
@@ -21,7 +22,7 @@ namespace Medidata.Lumberjack.Core.Processing
 
         #endregion
 
-        #region Private and protected fields
+        #region Private fields
 
         protected static readonly object _locker = new object();
 
@@ -29,7 +30,8 @@ namespace Medidata.Lumberjack.Core.Processing
         private volatile bool _isStopping;
 
         private Thread _thread;
-        protected Logger _logger;
+        private Logger _logger;
+        private Task _task;
 
         #endregion
 
@@ -70,11 +72,6 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <summary>
         /// 
         /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public bool IsRunning {
             get { return _isRunning; }
             protected set { _isRunning = value; }
@@ -86,6 +83,18 @@ namespace Medidata.Lumberjack.Core.Processing
         public bool IsStopping {
             get { return _isStopping; }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected Logger Logger {
+            get { return _logger ?? (_logger = Logger.GetInstance()); }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Name { get; private set; }
 
         #endregion
 
@@ -105,29 +114,40 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <param name="metrics"></param>
         /// <returns></returns>
         public bool Start(EngineMetrics metrics) {
-            if (_thread != null && _thread.IsAlive)
-                return false;
+            if (Logger.IsTraceEnabled)
+                Logger.Trace("EB-START - Enter");
 
-            _isRunning = true;
-            _isStopping = false;
+            var dead = _thread == null || !_thread.IsAlive;
+            if (dead) {
+                _isRunning = true;
+                _isStopping = false;
 
-            _thread = new Thread(EngineThread) { Name = Name };
-            _thread.Start(metrics);
+                _thread = new Thread(EngineThread) {Name = Name};
+                _thread.Start(metrics);
+            }
+            
+            if (Logger.IsTraceEnabled)
+                Logger.Trace("EB-START - Exit : " + !dead);
 
-            return true;
+            return !dead;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public bool Stop() {
-            if (!_thread.IsAlive || _isStopping)
-                return false;
+            if (Logger.IsTraceEnabled)
+                Logger.Trace("EB-STOP - Enter");
 
-            _isStopping = true;
+            var alive = (_thread != null && !_thread.IsAlive) || _isStopping;
+            if (alive)
+                _isStopping = true;
 
-            return true;
+            if (Logger.IsTraceEnabled)
+                Logger.Trace("EB-STOP - Exit : " + alive);
+
+            return alive;
         }
 
         /// <summary>
@@ -166,8 +186,8 @@ namespace Medidata.Lumberjack.Core.Processing
             } else if (metrics.ProcessedLogs > 0 && metrics.TotalLogs > 0) {
                 percent = (int) (((float) metrics.ProcessedLogs/(float) metrics.TotalLogs)*100);
             }
-
             ProgressChanged.Invoke(this, new EngineProgressChangedEventArgs(percent, metrics, logFile));
+            //Task.Factory.StartNew(() => ProgressChanged.Invoke(this, new EngineProgressChangedEventArgs(percent, metrics, logFile)));
         }
 
         /// <summary>
@@ -189,133 +209,6 @@ namespace Medidata.Lumberjack.Core.Processing
                 Completed.Invoke(this, new EngineCompletedEventArgs(exception, cancelled, metrics));
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFile"></param>
-        /// <param name="entry"></param>
-        /// <param name="contextFormat"></param>
-        /// <param name="match"></param>
-        /// <returns></returns>
-        protected bool ParseFormatFields(LogFile logFile, Entry entry, ContextFormat contextFormat, Match match) {
-            var fields = contextFormat.Fields;
-
-            if (Logger.IsTraceEnabled) {
-                var msg = String.Format("Entering. Args: {{ logFile = {0}, entry = {1}, contextFormat = {2}, match = {3} (chars) }}"
-                    , logFile, entry, contextFormat, match.Length);
-
-                _logger.Trace("EB-PFF-001", msg);
-            }
-
-            // Iterate over each field the format can contain within the filename
-            foreach (var field in fields) {
-                string value = null;
-
-                var groups = field.Groups;
-                if (groups == null) {
-                    // If there are no groups defined, the field is permitted as a FormatField but
-                    // cannot be derived by parsing data in this (or possibly any) context
-                    continue;
-                }
-
-                // Take the first capture which was successful
-                for (var i = 0; i < groups.Length; i++) {
-                    if (!match.Groups[groups[i]].Success)
-                        continue;
-
-                    value = match.Groups[groups[i]].ToString();
-                    break;
-                }
-
-                if (field.Name.Equals(ContentField)) {
-                    if (Logger.IsTraceEnabled)
-                        _logger.Trace("EB-PFF-002", "Processing content format context");
-
-                    // Parse the log entry content to retreive additional metadata
-                    var contentContext = logFile.SessionFormat.Contexts[FormatContextEnum.Content];
-                    var success = ParseAllFieldMatches(logFile, entry, contentContext, value);
-
-                    if (!success) {
-                        OnDebug(String.Format("Failed to process CONTENT for log file {0}.", logFile.Filename));
-                        return false;
-                    }
-                } else {
-                    // Check if field was not found but has default value
-                    if (value == null && field.Default != null) {
-                        value = field.Default;
-                    }
-
-                    if (value != null) {
-                        if (Logger.IsTraceEnabled) {
-                            if (field.Name == "MESSAGE")
-                                _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = " + value.Length + " characters (len)");
-                            else
-                                _logger.Trace("EB-PFF-003", "Field = '" + field.Name + "', Value = '" + value + "'");
-                        }
-
-                        if (field.Name.Equals("LEVEL")) {
-                            switch (value.ToUpper()) {
-                                case "TRACE":
-                                    logFile.EntryStats.Trace++;
-                                    break;
-                                case "DEBUG":
-                                    logFile.EntryStats.Debug++;
-                                    break;
-                                case "INFO":
-                                    logFile.EntryStats.Info++;
-                                    break;
-                                case "WARN":
-                                    logFile.EntryStats.Warn++;
-                                    break;
-                                case "ERROR":
-                                    logFile.EntryStats.Error++;
-                                    break;
-                                case "FATAL":
-                                    logFile.EntryStats.Fatal++;
-                                    break;
-                            }    
-                        }
-
-
-                        if (field.Filterable) {
-                            SessionInstance.FieldValues.Add(logFile, entry, field, value);
-                           // OnError("Failed to set field '" + field.Name + "' to value '" + value + "'");
-                           // return false;
-                        }
-                    }
-                }
-
-                // Check if required field could not be found and no default value
-                if (!field.Required || value != null)
-                    continue;
-
-                OnInfo(String.Format("Required field \"{0}\" not found for log file.", field.Name));
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logFile"></param>
-        /// <param name="entry"></param>
-        /// <param name="contextFormat"></param>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        protected bool ParseAllFieldMatches(LogFile logFile, Entry entry, ContextFormat contextFormat, string text) {
-            var matches = contextFormat.Regex.Matches(text);
-
-            foreach (Match match in matches) {
-                if (match.Success && !ParseFormatFields(logFile, entry, contextFormat, match)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
         
         #endregion
 
@@ -329,7 +222,7 @@ namespace Medidata.Lumberjack.Core.Processing
             var notified = false;
 
             if (Logger.IsTraceEnabled)
-                _logger.Trace("EB-ET-001", "Entering " + Name);
+                Logger.Trace("EB-ET - Enter : " + Name);
 
             var state = new EngineState();
             var metrics = engineMetrics as EngineMetrics ?? new EngineMetrics();
@@ -386,20 +279,17 @@ namespace Medidata.Lumberjack.Core.Processing
                 notified = true;
             }
 
-
             _isStopping = false;
             _isRunning = false;
 
             if (!notified)
                 OnCompleted(null, _isStopping, metrics);
 
-            //*/OnInfo(String.Format("Engine {0} has completed processing.", Name));
-            //*/SessionInstance.ProcessController.InvokeLogAction(this, EngineActionEnum.ProcessTerminated, null, metrics);
-
-            _logger.Trace(metrics.ToString());
+            if (Logger.IsDebugEnabled)
+                Logger.Debug(metrics.ToString());
 
             if (Logger.IsTraceEnabled)
-                _logger.Trace("EB-ET-009", "Exiting " + Name);
+                _logger.Trace("EB-ET - Exit : " + Name);
         }
 
         /// <summary>

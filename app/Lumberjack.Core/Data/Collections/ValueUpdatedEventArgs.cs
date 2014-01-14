@@ -21,12 +21,12 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="container"></param>
+        /// <param name="component"></param>
         /// <param name="formatField"></param>
         /// <param name="value"></param>
         /// <param name="changed"></param>
-        public ValueUpdatedEventArgs(IFieldValueContainer container, FormatField formatField, object value, bool changed) {
-            Container = container;
+        public ValueUpdatedEventArgs(IFieldValueComponent component, FormatField formatField, object value, bool changed) {
+            Component = component;
             FormatField = formatField;
             Value = value;
             Changed = changed;
@@ -35,7 +35,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <summary>
         /// 
         /// </summary>
-        public IFieldValueContainer Container { get; private set; }
+        public IFieldValueComponent Component { get; private set; }
 
         /// <summary>
         /// 

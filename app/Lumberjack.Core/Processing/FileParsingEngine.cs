@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Collections;
 
 namespace Medidata.Lumberjack.Core.Processing
 {
@@ -9,10 +10,20 @@ namespace Medidata.Lumberjack.Core.Processing
     /// </summary>
     public sealed class FileParsingEngine : EngineBase
     {
+        #region Constants
+
+        private const FormatContextEnum ContextType = FormatContextEnum.Filename;
+
+        #endregion
+
+        #region Private fields
+
         private IEnumerable<SessionFormat> _sessionFormats;
 
+        #endregion
+
         #region Initializers
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -54,9 +65,9 @@ namespace Medidata.Lumberjack.Core.Processing
             // Iterate over each Format in the session, using the first one which matches
             // the filename regex to determine the format of the log
             foreach (var format in _sessionFormats) {
-                var contextFormat = format.Contexts[FormatContextEnum.Filename];
+                var regex = format.Contexts[ContextType].Regex;
 
-                var match = contextFormat.Regex.Match(filename);
+                var match = regex.Match(filename);
                 if (!match.Success)
                     continue;
 
@@ -64,9 +75,15 @@ namespace Medidata.Lumberjack.Core.Processing
 
                 // Parse all filename fields for this log file. If successful, no need to check
                 // other formats
-                if (!ParseFormatFields(logFile, null, contextFormat, match)) {
+
+                var fieldValues = FieldValueFactory.MatchLogValues(logFile, ContextType, match, FieldValuePredicate);
+                if (fieldValues == null)
                     break;
-                }
+
+                SessionInstance.FieldValues.Add(fieldValues.ToArray());
+                //if (!ParseFormatFields(logFile, null, contextFormat, match)) {
+                //    break;
+                // }
 
                 success = true;
                 break;
@@ -109,6 +126,24 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <returns></returns>
         protected override EngineStatusEnum GetLogProcessStatus(LogFile logFile) {
             return logFile.FilenameParseStatus;
+        }
+
+        #endregion
+
+        #region Private methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logFieldValue"></param>
+        /// <returns></returns>
+        private static bool FieldValuePredicate(LogFieldValue logFieldValue) {
+            var formatField = logFieldValue.FormatField;
+
+            if (formatField.Filterable || formatField.DataType != FieldDataTypeEnum.String)
+                return false;
+
+            return true;
         }
 
         #endregion

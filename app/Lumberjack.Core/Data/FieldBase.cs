@@ -94,20 +94,21 @@ namespace Medidata.Lumberjack.Core.Data
         /// <param name="formatted"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryUnformatValue(string formatted, ref DateTime value) {
+        public bool TryUnformatValue(string formatted, out DateTime value) {
             DateTime dateValue;
             var success = false;
 
             if (String.IsNullOrEmpty(FormatPattern)) {
                 success = DateTime.TryParse(formatted, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out dateValue);
-                if (success)
-                    value = dateValue;
+
+                value = success ? dateValue : default(DateTime);
             } else {
                 try {
                     dateValue = DateTime.ParseExact(formatted, FormatPattern, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
                     value = dateValue;
                     success = true;
                 } catch (FormatException) {
+                    value = default(DateTime);
                     Logger.GetInstance().Error(String.Format("Failed to parse DateTime value '{0}' using pattern '{1}'", formatted, FormatPattern));
                 }
             }
@@ -121,13 +122,14 @@ namespace Medidata.Lumberjack.Core.Data
         /// <param name="formatted"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryUnformatValue(string formatted, ref Int32 value) {
+        public bool TryUnformatValue(string formatted, out Int32 value) {
             var success = false;
 
             try {
                 value = Int32.Parse(formatted, NumberStyles.Number, CultureInfo.InvariantCulture);
                 success = true;
             } catch (FormatException) {
+                value = default(Int32);
                 Logger.GetInstance().Error(String.Format("Failed to parse Int32 value '{0}'", formatted));
             }
 

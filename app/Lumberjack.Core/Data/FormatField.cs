@@ -10,7 +10,7 @@ namespace Medidata.Lumberjack.Core.Data
     /// <summary>
     /// 
     /// </summary>
-    public class FormatField : FieldBase
+    public class FormatField : FieldBase, IFieldValueComponent
     {
         #region Private fields
 
@@ -31,13 +31,13 @@ namespace Medidata.Lumberjack.Core.Data
         /// <param name="id"></param>
         public FormatField(SessionFormat sessionFormat, FormatFieldElement formatFieldElement, SessionField sessionField, int id) {
             if (formatFieldElement == null){
-                Logger.GetInstance().Error("Failed to create FormatField: no FormatFieldElement provided");
+                Logger.DefaultLogger.Error("Failed to create FormatField: no FormatFieldElement provided");
                 throw new ArgumentNullException("formatFieldElement");
             }
             
 
             if (sessionField == null) {
-                Logger.GetInstance().Error("Failed to create FormatField for '" + formatFieldElement.Name + "': not defined as a SessionField");
+                Logger.DefaultLogger.Error("Failed to create FormatField for '" + formatFieldElement.Name + "': not defined as a SessionField");
                 throw new ArgumentNullException("sessionField");
             }
 
@@ -47,10 +47,11 @@ namespace Medidata.Lumberjack.Core.Data
             
             Id = id;
             DataType = sessionField.DataType;
+            Type = sessionField.Type;
             Display = sessionField.Display;
             Name = sessionField.Name;
             Groups = GetGroupIndexArray(formatFieldElement);
-            Type = formatFieldElement.Type;
+            Context = formatFieldElement.Type;
 
             // Sure, we could use ?:, but it really started to look like a mess
             if (String.IsNullOrEmpty(formatFieldElement.Default)) {
@@ -83,6 +84,21 @@ namespace Medidata.Lumberjack.Core.Data
         #region Properties
 
         /// <summary>
+        /// 
+        /// </summary>
+        public FormatContextEnum Context { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int[] Groups { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Id { set; get; }
+
+        /// <summary>
         /// The SessionField object which the FormatField refers to
         /// </summary>
         public SessionField SessionField { get; private set; }
@@ -95,18 +111,8 @@ namespace Medidata.Lumberjack.Core.Data
         /// <summary>
         /// 
         /// </summary>
-        public FormatContextEnum Type { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Id { set; get; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int[] Groups { get; set; }
-
+        public Type Type { get; private set; }
+        
         #endregion
         
         #region Private methods
@@ -153,7 +159,7 @@ namespace Medidata.Lumberjack.Core.Data
                 "Required = {4}, " +
                 "Default = {5} }}",
                 Id,
-                Type,
+                Context,
                 Name,
                 DataType,
                 Required,

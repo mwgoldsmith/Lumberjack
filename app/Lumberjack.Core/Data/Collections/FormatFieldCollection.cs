@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace Medidata.Lumberjack.Core.Data.Collections
@@ -13,10 +10,14 @@ namespace Medidata.Lumberjack.Core.Data.Collections
     /// </summary>
     public sealed class FormatFieldCollection : CollectionBase<FormatField>
     {
+        #region Private fields
+
         private static long _id;
 
+        #endregion
+
         #region Initializers
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -94,7 +95,26 @@ namespace Medidata.Lumberjack.Core.Data.Collections
 
             return items;
         }
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public List<FormatField> FindAll(Func<FormatField, bool> predicate) {
+            var items = new List<FormatField>();
+
+            lock (_locker) {
+                for (var i = 0; i < _items.Count; i++) {
+                    var item = _items[i];
+                    if (predicate(item))
+                        items.Add(item);
+                }
+            }
+
+            return items;
+        }
+
         /// <summary>
         /// Finds the first FormatField item in the collection which is linked to a
         /// specified SessionField. 

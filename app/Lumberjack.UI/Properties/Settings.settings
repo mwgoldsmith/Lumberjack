@@ -24,10 +24,28 @@
       <Value Profile="(Default)">Filename:200,Size:75,Format:100,Total Entries:75,TRACE:75,DEBUG:75,INFO:75,WARN:75,ERROR:75</Value>
     </Setting>
     <Setting Name="EntriesListViewColumns" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Timestamp:100,Level:100,Message:200</Value>
+      <Value Profile="(Default)">Format:100,Timestamp:100,Level:100,Message:200</Value>
     </Setting>
     <Setting Name="SplitterDistance" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">290</Value>
+    </Setting>
+    <Setting Name="TraceLoggingEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DebugLoggingEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="InfoLoggingEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="WarnLoggingEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ErrorLoggingEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="FineLoggingEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>
