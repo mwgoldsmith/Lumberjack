@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Medidata.Lumberjack.Core.Data.Formats;
 using Medidata.Lumberjack.Core.Logging;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Fields.Values
 {
     public static class FieldValueFactory
     {
@@ -82,7 +82,7 @@ namespace Medidata.Lumberjack.Core.Data
                         _stringValues.Add((string)valueRef);
                 }
             }
-            Debug.WriteLine(formatField.Name + " : " + formatField.Type);
+
             return new EntryFieldValue(entry, formatField, valueRef);
         }
 
@@ -197,7 +197,7 @@ namespace Medidata.Lumberjack.Core.Data
             var result = new List<T>();
 
             if (Logger.IsTraceEnabled)
-                Logger.Trace("FVF-MFV.STRING - Enter");
+                Logger.Trace("FVF-MFV.STRING", "Enter");
 
             var context = logFile.SessionFormat.Contexts[formatContext];
             var matches = context.Regex.Matches(text);
@@ -206,15 +206,15 @@ namespace Medidata.Lumberjack.Core.Data
                 if (!match.Success)
                     continue;
 
-                result = MatchFieldValues(logFile, entry, formatContext, match, predicate);
-                if (result == null)
+                var fieldValues = MatchFieldValues(logFile, entry, formatContext, match, predicate);
+                if (fieldValues == null)
                     break;
 
-                result.AddRange(result);
+                result.AddRange(fieldValues);
             }
 
             if (Logger.IsTraceEnabled)
-                Logger.Trace("FVF-MFV.STRING - Exit : " + (result != null ? result.Count : -1));
+                Logger.Trace("FVF-MFV.STRING", "Exit : " + (result != null ? result.Count : -1));
 
             return result;
         }
@@ -233,7 +233,7 @@ namespace Medidata.Lumberjack.Core.Data
             var result = new List<T>();
 
             if (Logger.IsTraceEnabled)
-                Logger.Trace("FVF-MFV.MATCH - Enter");
+                Logger.Trace("FVF-MFV.MATCH", "Enter");
 
             var context = logFile.SessionFormat.Contexts[formatContext];
 
@@ -284,7 +284,7 @@ namespace Medidata.Lumberjack.Core.Data
             }
 
             if (Logger.IsTraceEnabled)
-                Logger.Trace("FVF-MFV - Exit : " + (result != null ? result.Count : -1));
+                Logger.Trace("FVF-MFV", "Exit : " + (result != null ? result.Count : -1));
 
             return result;
         }

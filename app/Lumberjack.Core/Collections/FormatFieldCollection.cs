@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
+using Medidata.Lumberjack.Core.Data.Fields;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
 
-namespace Medidata.Lumberjack.Core.Data.Collections
+namespace Medidata.Lumberjack.Core.Collections
 {
     /// <summary>
     /// 
@@ -12,7 +13,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
     {
         #region Private fields
 
-        private static long _id;
+       // private static long _id;
 
         #endregion
 
@@ -35,7 +36,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public override FormatField this[int index] {
+        public FormatField this[int index] {
             [DebuggerStepThrough]
             get { return _items[index]; }
         }
@@ -48,10 +49,10 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <returns></returns>
-        [DebuggerStepThrough]
-        public static int GetNextId() {
-            return (int)Interlocked.Increment(ref _id);
-        }
+        //[DebuggerStepThrough]
+        //public static int GetNextId() {
+        //    return (int)Interlocked.Increment(ref _id);
+        //}
 
         /// <summary>
         /// 

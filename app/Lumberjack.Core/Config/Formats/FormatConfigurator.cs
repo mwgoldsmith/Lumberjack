@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
-using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Formats;
 
 namespace Medidata.Lumberjack.Core.Config.Formats
 {

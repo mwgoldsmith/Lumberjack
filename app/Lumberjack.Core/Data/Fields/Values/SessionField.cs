@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Diagnostics;
 using Medidata.Lumberjack.Core.Config.Fields;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Fields.Values
 {
     /// <summary>
     /// 
     /// </summary>
-    public sealed class SessionField : FieldBase, IFieldValueComponent
+    public sealed class SessionField : FieldKeyedBase<SessionField>, IFieldValueComponent
     {
         #region Priviate fields
 
         // Saving reference to object from which the values of this SessionField
         // were derived. Not sure if will be needed later, but keeping them for now
-        private readonly FieldElement _fieldElement;
+        //private readonly FieldElement _fieldElement;
         
         #endregion
 
@@ -23,11 +22,9 @@ namespace Medidata.Lumberjack.Core.Data
         /// 
         /// </summary>
         /// <param name="fieldElement"></param>
-        /// <param name="id"></param>
-        public SessionField(FieldElement fieldElement, byte id) {
-            _fieldElement = fieldElement;
+        public SessionField(FieldElement fieldElement) {
+            //_fieldElement = fieldElement;
 
-            Id = id;
             DataType = fieldElement.DataType;
             Default = fieldElement.Default;
             Display = fieldElement.Display;
@@ -51,9 +48,8 @@ namespace Medidata.Lumberjack.Core.Data
             var flags = FieldContextFlags.None;
 
             // ReSharper disable LoopCanBeConvertedToQuery
-            foreach (var fieldContextElement in fieldElement.FieldContexts) {
+            foreach (var fieldContextElement in fieldElement.FieldContexts)
                 flags |= (FieldContextFlags)Enum.Parse(typeof(FieldContextFlags), fieldContextElement.Type.ToString());
-            }
 
             // ReSharper restore LoopCanBeConvertedToQuery
             ContextFlags = flags;
@@ -71,16 +67,28 @@ namespace Medidata.Lumberjack.Core.Data
         /// <summary>
         /// 
         /// </summary>
-        public int Id { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public Type Type { get; private set; }
 
         #endregion
 
+        #region IFieldValueComponent implementation
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(IFieldValueComponent other) {
+            if (other == null || !(other is SessionField))
+                return false;
+
+            return Id == other.Id;
+        }
+
+        #endregion
+
         #region ToString override for debugging
+
 
         /// <summary>
         /// 
@@ -89,8 +97,8 @@ namespace Medidata.Lumberjack.Core.Data
         public override string ToString() {
             return String.Format("{{ " +
                 "Id = {0}, " +
-                "Context Flags = {1}, " +
                 "Name = {2}, " +
+                "Context Flags = {1}, " +
                 "Data Type = {3}, " +
                 "Required = {4}, " +
                 "Default = {5} }}",

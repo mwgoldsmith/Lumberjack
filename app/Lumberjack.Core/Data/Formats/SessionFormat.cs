@@ -1,22 +1,21 @@
 ﻿using System;
-using System.Diagnostics;
+using Medidata.Lumberjack.Core.Collections;
 using Medidata.Lumberjack.Core.Config.Formats;
-using Medidata.Lumberjack.Core.Data.Collections;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Formats
 {
     /// <summary>
     /// 
     /// </summary>
     /// 
-    public sealed class SessionFormat
+    public sealed class SessionFormat : KeyedBase<SessionFormat>
     {
         #region Private fields
 
         // Saving reference to objects from which the values of this SessionFormat
         // were derived. Not sure if will be needed later, but keeping them for now
-        private readonly FormatElement _formatElement;
-        private readonly UserSession _session;
+        //private readonly FormatElement _formatElement;
+        //private readonly UserSession _session;
 
         #endregion
 
@@ -27,12 +26,10 @@ namespace Medidata.Lumberjack.Core.Data
         /// </summary>
         /// <param name="session"></param>
         /// <param name="formatElement"></param>
-        /// <param name="id"></param>
-        public SessionFormat(UserSession session, FormatElement formatElement, byte id) {
-            _formatElement = formatElement;
-            _session = session;
+        public SessionFormat(UserSession session, FormatElement formatElement) {
+            //_formatElement = formatElement;
+            //_session = session;
 
-            Id = id;
             Reference = formatElement.Reference;
             Name = formatElement.Name;
             TimestampFormat = formatElement.TimestampFormat;
@@ -55,11 +52,6 @@ namespace Medidata.Lumberjack.Core.Data
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public byte Id { get; private set; }
 
         /// <summary>
         /// 
@@ -92,8 +84,8 @@ namespace Medidata.Lumberjack.Core.Data
         public override string ToString() {
             return String.Format("{{ " +
                 "Id = {0}, " +
-                "Reference = {1}, " +
                 "Name = {2}, " +
+                "Reference = {1}, " +
                 "TimestampFormat = {3}, " +
                 "Contexts = {4} }}",
                 Id,

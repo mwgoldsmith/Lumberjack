@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
+using Medidata.Lumberjack.Core.Data.Formats;
 using Medidata.Lumberjack.Core.Processing;
 
 namespace Medidata.Lumberjack.Core.Data
 {
-    public class LogFile : IFieldValueComponent
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class LogFile : KeyedBase<IFieldValueComponent>, IFieldValueComponent
     {
         #region Nested classes
 
@@ -168,7 +169,7 @@ namespace Medidata.Lumberjack.Core.Data
             Filename = Path.GetFileName(fullFilename);
             Filesize = size;
             EntryStats = new LogEntryStats();
-            ProcessTimeElapse = new Dictionary<ProcessTypeEnum, long>()
+            ProcessTimeElapse = new Dictionary<ProcessTypeEnum, long>
                 {
                     {ProcessTypeEnum.Hash, -1},
                     {ProcessTypeEnum.Filename, -1},
@@ -179,11 +180,6 @@ namespace Medidata.Lumberjack.Core.Data
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Id { get; set; }
 
         /// <summary>
         /// 
@@ -225,12 +221,27 @@ namespace Medidata.Lumberjack.Core.Data
         /// </summary>
         public string Md5Hash { get; set; }
 
+        [NotImplemented]
         public Dictionary<ProcessTypeEnum, long> ProcessTimeElapse { get; private set; }
 
         /// <summary>
         /// 
         /// </summary>
         public SessionFormat SessionFormat { get; set; }
+
+        #endregion
+
+        #region KeyedBase overrides
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public override int CompareTo(IFieldValueComponent other) {
+            var logFile = other as LogFile;
+            return logFile == null ? 1 : Filesize.CompareTo(logFile.Filesize);
+        }
 
         #endregion
 

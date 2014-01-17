@@ -1,11 +1,12 @@
 ﻿using System;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
 
 namespace Medidata.Lumberjack.Core.Data
 {
     /// <summary>
     /// 
     /// </summary>
-    public class Entry : IFieldValueComponent
+    public sealed class Entry : KeyedBase<IFieldValueComponent>, IFieldValueComponent
     {
         #region Initializers
 
@@ -28,11 +29,6 @@ namespace Medidata.Lumberjack.Core.Data
         /// <summary>
         /// 
         /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public UInt16 Length { get; private set; }
 
         /// <summary>
@@ -44,11 +40,35 @@ namespace Medidata.Lumberjack.Core.Data
         /// 
         /// </summary>
         public long Position { get; private set; }
-        
+
         /// <summary>
         /// 
         /// </summary>
+        [NotImplemented]
         public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        //[NotImplemented]
+        //public Dictionary<FieldEnum, EntryFieldValue> EnumValues { get; set; }
+
+        #endregion
+
+        #region KeyedBase overrides
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public override int CompareTo(IFieldValueComponent other) {
+            var entry = other as Entry;
+
+            return entry == null ? 1 : (LogFile.Id == entry.LogFile.Id)
+                ? Position.CompareTo(entry.Position)
+                : LogFile.CompareTo(entry.LogFile);
+        }
 
         #endregion
 
@@ -61,15 +81,13 @@ namespace Medidata.Lumberjack.Core.Data
         public override string ToString() {
             return String.Format("{{ " +
                 "Id = {0}, " +
-                "Length = {1}, " +
-                "LogFile = {2}, " +
-                "Position = {3}, " +
-                "Timestamp = {4} }}",
+                "Position = {1}, " +
+                "Length = {2}, " +
+                "LogFile = {3} }}",
                 Id,
-                Length,
-                LogFile,
                 Position,
-                Timestamp);
+                Length,
+                LogFile);
         }
 
         #endregion

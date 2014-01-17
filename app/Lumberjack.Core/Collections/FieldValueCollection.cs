@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Fields;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
 
-namespace Medidata.Lumberjack.Core.Data.Collections
+namespace Medidata.Lumberjack.Core.Collections
 {
     /// <summary>
     /// 
@@ -52,7 +55,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public override IFieldValue this[int index] {
+        public IFieldValue this[int index] {
             get { return _items[index]; }
         }
 

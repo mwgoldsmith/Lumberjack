@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Fields
 {
     /// <summary>
     /// 

@@ -1,6 +1,4 @@
-﻿using Medidata.Lumberjack.Core.Logging;
-
-namespace Medidata.Lumberjack.Core
+﻿namespace Medidata.Lumberjack.Core
 {
     /// <summary>
     /// 

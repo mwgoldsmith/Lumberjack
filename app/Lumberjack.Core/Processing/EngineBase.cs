@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using Medidata.Lumberjack.Core.Data;
 using Medidata.Lumberjack.Core.Logging;
 
@@ -31,7 +28,8 @@ namespace Medidata.Lumberjack.Core.Processing
 
         private Thread _thread;
         private Logger _logger;
-        private Task _task;
+        private int _instanceTotal;
+        private int _instanceCount;
 
         #endregion
 
@@ -115,19 +113,21 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <returns></returns>
         public bool Start(EngineMetrics metrics) {
             if (Logger.IsTraceEnabled)
-                Logger.Trace("EB-START - Enter");
+                Logger.Trace("EB-START", "Enter");
 
             var dead = _thread == null || !_thread.IsAlive;
             if (dead) {
                 _isRunning = true;
                 _isStopping = false;
 
-                _thread = new Thread(EngineThread) {Name = Name};
+
+                _thread = new Thread(x => ThreadWrapper(x, EngineThread));
+                
                 _thread.Start(metrics);
             }
             
             if (Logger.IsTraceEnabled)
-                Logger.Trace("EB-START - Exit : " + !dead);
+                Logger.Trace("EB-START", "Exit : " + !dead);
 
             return !dead;
         }
@@ -138,14 +138,14 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <returns></returns>
         public bool Stop() {
             if (Logger.IsTraceEnabled)
-                Logger.Trace("EB-STOP - Enter");
+                Logger.Trace("EB-STOP", "Enter");
 
             var alive = (_thread != null && !_thread.IsAlive) || _isStopping;
             if (alive)
                 _isStopping = true;
 
             if (Logger.IsTraceEnabled)
-                Logger.Trace("EB-STOP - Exit : " + alive);
+                Logger.Trace("EB-STOP", "Exit : " + alive);
 
             return alive;
         }
@@ -215,21 +215,50 @@ namespace Medidata.Lumberjack.Core.Processing
         #region Private methods
 
         /// <summary>
+        /// Generic wrapper used when a thread begins executing:
+        /// - Maintains counts of how many times a particular engine has created a new thread
+        ///   as well as how many are currently running.
+        /// - The name of the thread is set to a unique value.
+        /// </summary>
+        /// <param name="param">Parameter to be passed to <paramref name="start"/>.</param>
+        /// <param name="start">Method to be invoked for the executing thread.</param>
+        private void ThreadWrapper(object param, ParameterizedThreadStart start) {
+            lock (_locker) {
+                _instanceTotal++;
+                _instanceCount++;
+            }
+
+            var name = String.Format("{0}-{1:0000}-{2:00}", Thread.CurrentThread.ManagedThreadId, _instanceTotal, _instanceCount);
+
+            if (Logger.IsTraceEnabled)
+                Logger.Trace(Name, "Enter : thread ID " + name);
+
+            Thread.CurrentThread.Name = name;
+
+            start(param);
+
+            if (Logger.IsTraceEnabled)
+                Logger.Trace(Name, "Exit : " + name);
+
+            lock (_locker) {
+                _instanceCount--;
+                _isStopping = false;
+                _isRunning = false;
+            }
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="engineMetrics"></param>
         private void EngineThread(object engineMetrics) {
             var notified = false;
-
-            if (Logger.IsTraceEnabled)
-                Logger.Trace("EB-ET - Enter : " + Name);
-
             var state = new EngineState();
             var metrics = engineMetrics as EngineMetrics ?? new EngineMetrics();
 
             try {
                 while (!_isStopping && _isRunning) {
-                    var logFiles = GetProcessable(SessionInstance.LogFiles.ToList()).ToArray();
+                    var logFiles = GetProcessable(SessionInstance.LogFiles.ToList().ConvertAll(x=>(LogFile)x)).ToArray();
                     if (logFiles.Length == 0) {
                         if (Logger.IsTraceEnabled)
                             _logger.Trace("EB-ET-002", "No log files found to process");
@@ -279,17 +308,11 @@ namespace Medidata.Lumberjack.Core.Processing
                 notified = true;
             }
 
-            _isStopping = false;
-            _isRunning = false;
-
             if (!notified)
                 OnCompleted(null, _isStopping, metrics);
 
             if (Logger.IsDebugEnabled)
                 Logger.Debug(metrics.ToString());
-
-            if (Logger.IsTraceEnabled)
-                _logger.Trace("EB-ET - Exit : " + Name);
         }
 
         /// <summary>

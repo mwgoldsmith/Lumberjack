@@ -1,22 +1,23 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Medidata.Lumberjack.Core.Config.Formats;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
+using Medidata.Lumberjack.Core.Data.Formats;
 using Medidata.Lumberjack.Core.Logging;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Fields
 {
     /// <summary>
     /// 
     /// </summary>
-    public class FormatField : FieldBase, IFieldValueComponent
+    public sealed class FormatField : FieldKeyedBase<FormatField>, IFieldValueComponent
     {
         #region Private fields
 
         // Saving reference to objects from which the values of this FormatField
         // were derived. Not sure if will be needed later, but keeping them for now
-        private readonly FormatFieldElement _formatFieldElement;
+        //private readonly FormatFieldElement _formatFieldElement;
 
         #endregion
 
@@ -28,24 +29,16 @@ namespace Medidata.Lumberjack.Core.Data
         /// <param name="sessionFormat"></param>
         /// <param name="formatFieldElement"></param>
         /// <param name="sessionField"></param>
-        /// <param name="id"></param>
-        public FormatField(SessionFormat sessionFormat, FormatFieldElement formatFieldElement, SessionField sessionField, int id) {
-            if (formatFieldElement == null){
-                Logger.DefaultLogger.Error("Failed to create FormatField: no FormatFieldElement provided");
+        public FormatField(SessionFormat sessionFormat, FormatFieldElement formatFieldElement, SessionField sessionField){
+            if (formatFieldElement == null)
                 throw new ArgumentNullException("formatFieldElement");
-            }
-            
-
-            if (sessionField == null) {
-                Logger.DefaultLogger.Error("Failed to create FormatField for '" + formatFieldElement.Name + "': not defined as a SessionField");
+            if (sessionField == null) 
                 throw new ArgumentNullException("sessionField");
-            }
 
+            //_formatFieldElement = formatFieldElement;
             SessionFormat = sessionFormat;
             SessionField = sessionField;
-            _formatFieldElement = formatFieldElement;
             
-            Id = id;
             DataType = sessionField.DataType;
             Type = sessionField.Type;
             Display = sessionField.Display;
@@ -94,11 +87,6 @@ namespace Medidata.Lumberjack.Core.Data
         public int[] Groups { get; set; }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public int Id { set; get; }
-
-        /// <summary>
         /// The SessionField object which the FormatField refers to
         /// </summary>
         public SessionField SessionField { get; private set; }
@@ -114,7 +102,23 @@ namespace Medidata.Lumberjack.Core.Data
         public Type Type { get; private set; }
         
         #endregion
-        
+
+        #region IFieldValueComponent implementation
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(IFieldValueComponent other) {
+            if (other == null || !(other is SessionField))
+                return false;
+
+            return Id == other.Id;
+        }
+
+        #endregion
+
         #region Private methods
 
         /// <summary>
@@ -134,7 +138,7 @@ namespace Medidata.Lumberjack.Core.Data
                 try {
                     indexArray[i] = Int32.Parse(indexes[i], NumberStyles.Integer);
                 } catch (FormatException) {
-                    Logger.GetInstance().Error(String.Format("Failed to parse value '{0}' as Int32", indexes[i]));
+                    Logger.DefaultLogger.Error(String.Format("Failed to parse value '{0}' as Int32", indexes[i]));
                     indexArray = null;
                 }
             }
@@ -153,8 +157,8 @@ namespace Medidata.Lumberjack.Core.Data
         public override string ToString() {
             return String.Format("{{ " +
                 "Id = {0}, " +
-                "Context = {1}, " +
                 "Name = {2}, " +
+                "Context = {1}, " +
                 "Data Type = {3}, " +
                 "Required = {4}, " +
                 "Default = {5} }}",

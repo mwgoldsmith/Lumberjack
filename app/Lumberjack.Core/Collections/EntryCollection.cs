@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
+using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
 
-namespace Medidata.Lumberjack.Core.Data.Collections
+namespace Medidata.Lumberjack.Core.Collections
 {
     /// <summary>
     /// 
     /// </summary>
-    public sealed class SessionFormatCollection : CollectionBase<SessionFormat>
+    public sealed class EntryCollection : CollectionBase<Entry>, IValueItemCollection<Entry>
     {
         #region Initializers
 
@@ -17,7 +15,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <param name="session"></param>
-        public SessionFormatCollection(UserSession session)
+        public EntryCollection(UserSession session)
             : base(session) {
             
         }
@@ -31,7 +29,8 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public override SessionFormat this[int index] {
+        public Entry this[int index] {
+            [DebuggerStepThrough]
             get { return _items[index]; }
         }
 

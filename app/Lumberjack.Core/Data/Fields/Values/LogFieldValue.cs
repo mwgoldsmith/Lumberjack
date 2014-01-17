@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Fields.Values
 {
     /// <summary>
     /// 
     /// </summary>
-    public class LogFieldValue : IComparable<LogFieldValue>, IFieldValue
+    public class LogFieldValue : IFieldValue
     {
         #region Private fields
 
@@ -99,16 +99,16 @@ namespace Medidata.Lumberjack.Core.Data
 
         #region IComparable<> implementation
 
-        public int CompareTo(LogFieldValue other) {
+        public virtual int CompareTo(IFieldValue other) {
             if (_type == typeof(DateTime))
-                return ((DateTime) Value).CompareTo((DateTime) other.Value);
+                return ((DateTime)Value).CompareTo((DateTime)other.Value);
 
             if (_type == typeof(Int32))
-                return ((Int32) Value).CompareTo((Int32) other.Value);
+                return ((Int32)Value).CompareTo((Int32)other.Value);
 
-            var value = (string) Value;
+            var value = (string)Value;
 
-            return value == null ? 1 : value.CompareTo((string) other.Value);
+            return value == null ? 1 : value.CompareTo((string)other.Value);
         }
 
         #endregion

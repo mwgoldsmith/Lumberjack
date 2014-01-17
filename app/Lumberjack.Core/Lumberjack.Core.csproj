@@ -79,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\FieldValueView.cs" />
     <Compile Include="Config\ConfigurableBase.cs" />
     <Compile Include="Config\Fields\FieldConfigurator.cs" />
     <Compile Include="Config\Fields\FieldContextElement.cs" />
@@ -90,35 +91,41 @@
     <Compile Include="Config\Formats\RegexElement.cs" />
     <Compile Include="Config\Nodes\NodeConfigurator.cs" />
     <Compile Include="Config\Nodes\NodeElement.cs" />
-    <Compile Include="Data\Collections\CollectionBase.cs" />
-    <Compile Include="Data\Collections\ContextCollection.cs" />
-    <Compile Include="Data\Collections\CollectionItemDelegates.cs" />
-    <Compile Include="Data\Collections\EntryCollection.cs" />
-    <Compile Include="Data\Collections\FieldValueCollection.cs" />
-    <Compile Include="Data\Collections\CollectionItemEventArgs.cs" />
-    <Compile Include="Data\Collections\ValueUpdatedEventArgs.cs" />
-    <Compile Include="Data\Collections\FormatFieldCollection.cs" />
-    <Compile Include="Data\Collections\LogFileCollection.cs" />
-    <Compile Include="Data\Collections\SessionFieldCollection.cs" />
-    <Compile Include="Data\Collections\SessionFormatCollection.cs" />
-    <Compile Include="Data\ContextFormat.cs" />
+    <Compile Include="Collections\CollectionBase.cs" />
+    <Compile Include="Collections\ContextCollection.cs" />
+    <Compile Include="Collections\CollectionItemDelegates.cs" />
+    <Compile Include="Collections\EntryCollection.cs" />
+    <Compile Include="Collections\FieldValueCollection.cs" />
+    <Compile Include="Collections\CollectionItemEventArgs.cs" />
+    <Compile Include="Collections\ValueUpdatedEventArgs.cs" />
+    <Compile Include="Collections\FormatFieldCollection.cs" />
+    <Compile Include="Collections\LogFileCollection.cs" />
+    <Compile Include="Collections\SessionFieldCollection.cs" />
+    <Compile Include="Collections\SessionFormatCollection.cs" />
+    <Compile Include="Data\Formats\ContextFormat.cs" />
     <Compile Include="Data\Entry.cs" />
-    <Compile Include="Data\EntryFieldValue.cs" />
-    <Compile Include="Data\FieldBase.cs" />
-    <Compile Include="Data\FieldContextFlags.cs" />
-    <Compile Include="Data\FieldDataTypeEnum.cs" />
-    <Compile Include="Data\IFieldValue.cs" />
-    <Compile Include="Data\LogFieldValue.cs" />
-    <Compile Include="Data\FieldValueFactory.cs" />
-    <Compile Include="Data\FormatContextEnum.cs" />
-    <Compile Include="Data\FormatField.cs" />
-    <Compile Include="Data\IFieldValueComponent.cs" />
+    <Compile Include="Data\Fields\Values\EntryFieldValue.cs" />
+    <Compile Include="Data\Fields\FieldBase.cs" />
+    <Compile Include="Data\Fields\FieldContextFlags.cs" />
+    <Compile Include="Data\Fields\FieldDataTypeEnum.cs" />
+    <Compile Include="Data\Fields\FieldKeyedBase.cs" />
+    <Compile Include="Data\Fields\Values\IFieldValue.cs" />
+    <Compile Include="Data\Fields\Values\IFieldValueItem.cs" />
+    <Compile Include="Data\IKeyedItem.cs" />
+    <Compile Include="Data\KeyedBase.cs" />
+    <Compile Include="Data\KeyGenerator.cs" />
+    <Compile Include="Data\Fields\Values\LogFieldValue.cs" />
+    <Compile Include="Data\Fields\Values\FieldValueFactory.cs" />
+    <Compile Include="Data\Formats\FormatContextEnum.cs" />
+    <Compile Include="Data\Fields\FormatField.cs" />
+    <Compile Include="Data\Fields\Values\IFieldValueComponent.cs" />
     <Compile Include="Data\LogFile.cs" />
-    <Compile Include="Data\SessionField.cs" />
-    <Compile Include="Data\SessionFormat.cs" />
+    <Compile Include="Data\Fields\Values\SessionField.cs" />
+    <Compile Include="Data\Formats\SessionFormat.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FileUtil.cs" />
     <Compile Include="Logging\EventLogger.cs" />
+    <Compile Include="NotImplementedAttribute.cs" />
     <Compile Include="Processing\EngineCompletedEventArgs.cs" />
     <Compile Include="Processing\EngineProgressChangedEventArgs.cs" />
     <Compile Include="SessionObject.cs" />
@@ -143,10 +150,10 @@
     <Compile Include="UserSession.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Diagrams\ClassDiagram2.cd" />
-    <None Include="Diagrams\Engines.cd" />
+    <None Include="Diagrams\Data Structure.cd" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

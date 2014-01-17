@@ -1,9 +1,10 @@
 ﻿using System;
+using Medidata.Lumberjack.Core.Collections;
 using Medidata.Lumberjack.Core.Config.Fields;
 using Medidata.Lumberjack.Core.Config.Formats;
 using Medidata.Lumberjack.Core.Config.Nodes;
-using Medidata.Lumberjack.Core.Data;
-using Medidata.Lumberjack.Core.Data.Collections;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
+using Medidata.Lumberjack.Core.Data.Formats;
 using Medidata.Lumberjack.Core.Logging;
 using Medidata.Lumberjack.Core.Processing;
 
@@ -172,11 +173,9 @@ namespace Medidata.Lumberjack.Core
             SessionFields.Clear();
 
             // Add each element within the configurator to the session field collection
-            byte id = 0;
-            foreach (var fieldElement in configurator.Fields) {
-                SessionFields.Add(new SessionField(fieldElement, id++));
-            }
-
+            foreach (var fieldElement in configurator.Fields) 
+                SessionFields.Add(new SessionField(fieldElement));
+            
             OnInfo("Loaded " + SessionFields.Count + " fields into user session.");
         }
 
@@ -204,9 +203,8 @@ namespace Medidata.Lumberjack.Core
             Formats.Clear();
 
             // Add each element within the configurator to the session format collection
-            byte id = 0;
             foreach (var formatElement in configurator.Formats) 
-                Formats.Add(new SessionFormat(this, formatElement, id++));
+                Formats.Add(new SessionFormat(this, formatElement));
             
             OnInfo("Loaded " + Formats.Count + " formats into user session.");
         }

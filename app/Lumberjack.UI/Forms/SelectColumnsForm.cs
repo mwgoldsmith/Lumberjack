@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Medidata.Lumberjack.Core;
-using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Fields;
 using Medidata.Lumberjack.UI.Properties;
 
 namespace Medidata.Lumberjack.UI

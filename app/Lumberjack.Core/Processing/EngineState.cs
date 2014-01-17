@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Formats;
 
 namespace Medidata.Lumberjack.Core.Processing
 {

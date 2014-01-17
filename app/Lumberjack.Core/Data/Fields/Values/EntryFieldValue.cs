@@ -1,5 +1,4 @@
-﻿
-namespace Medidata.Lumberjack.Core.Data
+﻿namespace Medidata.Lumberjack.Core.Data.Fields.Values
 {
     /// <summary>
     /// 
@@ -33,7 +32,7 @@ namespace Medidata.Lumberjack.Core.Data
 
         #endregion
 
-        #region Object overrides
+        #region System.Object overrides
 
         /// <summary>
         /// 
@@ -41,7 +40,7 @@ namespace Medidata.Lumberjack.Core.Data
         /// <returns></returns>
         public override int GetHashCode() {
             unchecked {
-                return (base.GetHashCode() * 397) ^ Entry.Id;;
+                return (base.GetHashCode() * 397) ^ Entry.Id;
             }
         }
 

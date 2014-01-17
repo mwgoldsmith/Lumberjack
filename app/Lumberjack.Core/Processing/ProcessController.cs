@@ -83,27 +83,27 @@ namespace Medidata.Lumberjack.Core.Processing
         public void Start() {
             var logger = Logger.GetInstance();
 
-            logger.Trace("PC-START-001");
+            logger.Trace("PC-START", "Enter");
 
-            if (!HashingEngine.IsRunning && SessionInstance.LogFiles.Any(x => HashingEngine.TestIfProcessable(x))) {
+            if (!HashingEngine.IsRunning && SessionInstance.LogFiles.Any(x => HashingEngine.TestIfProcessable((LogFile)x))) {
                 logger.Trace("PC-START-002a");
-                if (HashingEngine.Start()) 
-                    logger.Trace("PC-START-002b - running");
+                if (HashingEngine.Start())
+                    logger.Trace("PC-START-002b", "running");
             }
             
-            if (!FileParsingEngine.IsRunning && SessionInstance.LogFiles.Any(x => FileParsingEngine.TestIfProcessable(x))) {
+            if (!FileParsingEngine.IsRunning && SessionInstance.LogFiles.Any(x => FileParsingEngine.TestIfProcessable((LogFile)x))) {
                 logger.Trace("PC-START-003a");
-                if (FileParsingEngine.Start()) 
-                    logger.Trace("PC-START-003b - running");
-            }
-            
-            if (!EntryParsingEngine.IsRunning && SessionInstance.LogFiles.Any(x => EntryParsingEngine.TestIfProcessable(x))) {
-                logger.Trace("PC-START-004a");
-                if (EntryParsingEngine.Start()) 
-                    logger.Trace("PC-START-004b - running");
+                if (FileParsingEngine.Start())
+                    logger.Trace("PC-START-003b", "running");
             }
 
-            logger.Trace("PC-START-009");
+            if (!EntryParsingEngine.IsRunning && SessionInstance.LogFiles.Any(x => EntryParsingEngine.TestIfProcessable((LogFile)x))) {
+                logger.Trace("PC-START-004a");
+                if (EntryParsingEngine.Start())
+                    logger.Trace("PC-START-004b", "running");
+            }
+
+            logger.Trace("PC-START", "Exit");
         }
 
         /// <summary>

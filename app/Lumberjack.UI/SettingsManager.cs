@@ -151,7 +151,7 @@ namespace Medidata.Lumberjack.UI
                     result = prop != null ? (T) prop.DefaultValue : default(T);
                 }
 
-                Logger.DefaultLogger.Trace("Loaded setting : " + result + (getDefault ? " [DEFAULT]" : ""));
+                Logger.DefaultLogger.Debug("Loaded setting : " + result + (getDefault ? " [DEFAULT]" : ""));
             } catch (Exception ex) {
                 Logger.DefaultLogger.Error("Failed to retrieve settings value of type " + typeof (T), ex);
 
@@ -278,6 +278,8 @@ namespace Medidata.Lumberjack.UI
 
                 if (save)
                     Settings.Default.Save();
+
+                Logger.DefaultLogger.Debug("Set setting : " + key + " : " + value + (save ? " [SAVED]" : ""));
             } catch (Exception ex) {
                 Logger.DefaultLogger.Error("Failed to save settings", ex);
             }

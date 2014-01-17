@@ -2,10 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Medidata.Lumberjack.Core.Data;
 
-namespace Medidata.Lumberjack.Core.Data.Collections
+namespace Medidata.Lumberjack.Core.Collections
 {
-    public abstract class CollectionBase<T> : SessionObject, IList<T>
+    public abstract class CollectionBase<T> : SessionObject, IList<T> 
     {
         #region Constants
 
@@ -108,7 +109,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public virtual T this[int index] {
+        T IList<T>.this[int index] {
             [DebuggerStepThrough]
             get { return _items[index]; }
             [DebuggerStepThrough]

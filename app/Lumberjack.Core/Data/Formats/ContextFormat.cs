@@ -1,20 +1,20 @@
 ﻿using System;
-using System.Text;
 using System.Text.RegularExpressions;
+using Medidata.Lumberjack.Core.Collections;
 using Medidata.Lumberjack.Core.Config.Formats;
-using Medidata.Lumberjack.Core.Data.Collections;
+using Medidata.Lumberjack.Core.Data.Fields;
 using Medidata.Lumberjack.Core.Logging;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Formats
 {
     /// <summary>
     /// 
     /// </summary>
-    public class ContextFormat
+    public sealed class ContextFormat
     {
         #region Private fields
 
-        private FormatContextElement _formatContextElement;
+        private readonly FormatContextElement _formatContextElement;
 
         #endregion
 
@@ -36,10 +36,9 @@ namespace Medidata.Lumberjack.Core.Data
             // TODO: restricted to the items for this object
 
 
-            var id = 0;
             foreach (var field in formatContextElement.Fields) {
                 var sessionField = session.SessionFields.Find(field.Name);
-                var formatField = new FormatField(sessionFormat, field, sessionField, FormatFieldCollection.GetNextId());
+                var formatField = new FormatField(sessionFormat, field, sessionField);
 
                 formatFields.Add(formatField);
                 Fields.Add(formatField);
@@ -75,7 +74,7 @@ namespace Medidata.Lumberjack.Core.Data
 
             var pattern = regexElement.Pattern;
             if (String.IsNullOrEmpty(pattern)) {
-                Logger.GetInstance().Error("Regex pattern not provided in RegexElement element!");
+                Logger.DefaultLogger.Error("Regex pattern not provided in RegexElement element!");
                 return null;
             }
 

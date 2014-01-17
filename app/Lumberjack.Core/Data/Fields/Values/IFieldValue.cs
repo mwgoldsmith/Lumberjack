@@ -1,10 +1,11 @@
-﻿
-namespace Medidata.Lumberjack.Core.Data
+﻿using System;
+
+namespace Medidata.Lumberjack.Core.Data.Fields.Values
 {
     /// <summary>
     /// 
     /// </summary>
-    public interface IFieldValue
+    public interface IFieldValue : IComparable<IFieldValue>
     {
         #region Properties
 
@@ -27,6 +28,12 @@ namespace Medidata.Lumberjack.Core.Data
         /// The field's value
         /// </summary>
         object Value { get; }
+
+        #endregion
+
+        #region System.Object overrides
+
+        string ToString();
 
         #endregion
     }

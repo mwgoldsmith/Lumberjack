@@ -72,8 +72,8 @@
             this.mainStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainSplitContainer = new System.Windows.Forms.SplitContainer();
             this.logsListView = new System.Windows.Forms.ListView();
-            this.entriesListView = new System.Windows.Forms.ListView();
             this.entryNavigatorToolStrip = new System.Windows.Forms.ToolStrip();
+            this.moveFirstItemToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.movePreviousItemToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.separatorToolStripButton = new System.Windows.Forms.ToolStripSeparator();
             this.positionItemToolStripButton = new System.Windows.Forms.ToolStripTextBox();
@@ -81,6 +81,7 @@
             this.separatorToolStripButton1 = new System.Windows.Forms.ToolStripSeparator();
             this.moveNextItemToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.moveLastItemToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.entriesListView = new System.Windows.Forms.ListView();
             this.messageTimer = new System.Windows.Forms.Timer(this.components);
             this.logsContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addLocalLogsContextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -92,7 +93,6 @@
             this.logPropertiesContextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.messagesPanel = new System.Windows.Forms.Panel();
             this.messagesTextBox = new System.Windows.Forms.TextBox();
-            this.moveFirstItemToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.mainMenuStrip.SuspendLayout();
             this.mainStatusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.mainSplitContainer)).BeginInit();
@@ -456,22 +456,6 @@
             this.logsListView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.logsListView_KeyDown);
             this.logsListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.logsListView_MouseClick);
             // 
-            // entriesListView
-            // 
-            this.entriesListView.AllowColumnReorder = true;
-            this.entriesListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.entriesListView.FullRowSelect = true;
-            this.entriesListView.GridLines = true;
-            this.entriesListView.Location = new System.Drawing.Point(0, 0);
-            this.entriesListView.Name = "entriesListView";
-            this.entriesListView.ShowGroups = false;
-            this.entriesListView.Size = new System.Drawing.Size(771, 92);
-            this.entriesListView.TabIndex = 0;
-            this.entriesListView.UseCompatibleStateImageBehavior = false;
-            this.entriesListView.View = System.Windows.Forms.View.Details;
-            // 
             // entryNavigatorToolStrip
             // 
             this.entryNavigatorToolStrip.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -489,6 +473,15 @@
             this.entryNavigatorToolStrip.Size = new System.Drawing.Size(771, 25);
             this.entryNavigatorToolStrip.TabIndex = 1;
             this.entryNavigatorToolStrip.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.entryNavigatorToolStrip_ItemClicked);
+            // 
+            // moveFirstItemToolStripButton
+            // 
+            this.moveFirstItemToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.moveFirstItemToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("moveFirstItemToolStripButton.Image")));
+            this.moveFirstItemToolStripButton.Name = "moveFirstItemToolStripButton";
+            this.moveFirstItemToolStripButton.RightToLeftAutoMirrorImage = true;
+            this.moveFirstItemToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.moveFirstItemToolStripButton.Text = "Move first";
             // 
             // movePreviousItemToolStripButton
             // 
@@ -542,6 +535,22 @@
             this.moveLastItemToolStripButton.RightToLeftAutoMirrorImage = true;
             this.moveLastItemToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.moveLastItemToolStripButton.Text = "Move last";
+            // 
+            // entriesListView
+            // 
+            this.entriesListView.AllowColumnReorder = true;
+            this.entriesListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.entriesListView.FullRowSelect = true;
+            this.entriesListView.GridLines = true;
+            this.entriesListView.Location = new System.Drawing.Point(0, 0);
+            this.entriesListView.Name = "entriesListView";
+            this.entriesListView.ShowGroups = false;
+            this.entriesListView.Size = new System.Drawing.Size(771, 92);
+            this.entriesListView.TabIndex = 0;
+            this.entriesListView.UseCompatibleStateImageBehavior = false;
+            this.entriesListView.View = System.Windows.Forms.View.Details;
             // 
             // messageTimer
             // 
@@ -631,15 +640,6 @@
             this.messagesTextBox.Size = new System.Drawing.Size(771, 150);
             this.messagesTextBox.TabIndex = 0;
             this.messagesTextBox.WordWrap = false;
-            // 
-            // moveFirstItemToolStripButton
-            // 
-            this.moveFirstItemToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.moveFirstItemToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("moveFirstItemToolStripButton.Image")));
-            this.moveFirstItemToolStripButton.Name = "moveFirstItemToolStripButton";
-            this.moveFirstItemToolStripButton.RightToLeftAutoMirrorImage = true;
-            this.moveFirstItemToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.moveFirstItemToolStripButton.Text = "Move first";
             // 
             // MainForm
             // 

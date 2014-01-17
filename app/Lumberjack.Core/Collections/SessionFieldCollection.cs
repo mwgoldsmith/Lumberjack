@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Medidata.Lumberjack.Core.Data.Fields;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
 
-namespace Medidata.Lumberjack.Core.Data.Collections
+namespace Medidata.Lumberjack.Core.Collections
 {
     /// <summary>
     /// 
@@ -29,7 +30,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public override SessionField this[int index] {
+        public SessionField this[int index] {
             [DebuggerStepThrough]
             get { return _items[index]; }
         }

@@ -5,8 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Medidata.Lumberjack.Core;
+using Medidata.Lumberjack.Core.Collections;
 using Medidata.Lumberjack.Core.Data;
-using Medidata.Lumberjack.Core.Data.Collections;
+using Medidata.Lumberjack.Core.Data.Fields;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
+using Medidata.Lumberjack.Core.Data.Formats;
 using Medidata.Lumberjack.Core.Processing;
 
 namespace Medidata.Lumberjack.UI

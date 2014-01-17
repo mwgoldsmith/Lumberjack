@@ -1,5 +1,4 @@
 ﻿using System;
-using Medidata.Lumberjack.Core.Data;
 
 namespace Medidata.Lumberjack.Core.Processing
 {

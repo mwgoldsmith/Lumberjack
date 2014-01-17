@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Medidata.Lumberjack.Core.Data;
-using Medidata.Lumberjack.Core.Data.Collections;
-using Medidata.Lumberjack.Core.Logging;
+using Medidata.Lumberjack.Core.Data.Fields;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
+using Medidata.Lumberjack.Core.Data.Formats;
 
 namespace Medidata.Lumberjack.Core.Processing
 {
@@ -107,7 +104,7 @@ namespace Medidata.Lumberjack.Core.Processing
                                 continue;
 
                             var position = state.BytesProcessed + state.Encoding.GetByteCount(view.Substring(0, match.Index));
-                            var entry = new Entry(logFile, position, (ushort) match.Length) {Id = EntryCollection.GetNextId()};
+                            var entry = new Entry(logFile, position, (ushort) match.Length);// {Id = EntryCollection.GetNextId()};
 
                             lastPos = match.Index + match.Length - remaining.Length;
 
@@ -128,21 +125,17 @@ namespace Medidata.Lumberjack.Core.Processing
                         state.BytesProcessed += bytes;
                         state.BytesRead += count;
 
-                        if (lastPos < count) {
-                            remaining = text.Substring(lastPos);
-                        }
+                            remaining = (lastPos < count) ? text.Substring(lastPos) : "";
+                        
 
                         engineMetrics.ProcessedBytes += state.Encoding.GetByteCount(text);
                         AddToMetrics(entries.ToArray(), ref engineMetrics);
 
                         var metrics = engineMetrics;
-                        var vals = values.ToArray();
-                        var ents = entries.ToArray();
-                        
                         
                         //Task.Factory.StartNew(() => {
-                               SessionInstance.FieldValues.Add(vals);
-                               SessionInstance.Entries.Add(ents);
+                               SessionInstance.FieldValues.Add(values.ToArray());
+                               SessionInstance.Entries.Add(entries.ToArray());
                                OnProgressChanged(metrics, logFile);
                         //   });
 

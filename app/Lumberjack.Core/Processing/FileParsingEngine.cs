@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Medidata.Lumberjack.Core.Data;
-using Medidata.Lumberjack.Core.Data.Collections;
+using Medidata.Lumberjack.Core.Data.Fields;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
+using Medidata.Lumberjack.Core.Data.Formats;
 
 namespace Medidata.Lumberjack.Core.Processing
 {

@@ -1,17 +1,19 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Medidata.Lumberjack.Core.Data;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
 
-namespace Medidata.Lumberjack.Core.Data.Collections
+namespace Medidata.Lumberjack.Core.Collections
 {
     /// <summary>
     /// 
     /// </summary>
-    public sealed class LogFileCollection : CollectionBase<LogFile>
+    public sealed class LogFileCollection : CollectionBase<IFieldValueComponent>, IValueItemCollection<LogFile>
     {
         #region Private fields
 
-        private static long _id;
+       // private static long _id;
 
         #endregion
 
@@ -34,9 +36,9 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public override LogFile this[int index] {
+        public LogFile this[int index] {
             [DebuggerStepThrough]
-            get { return _items[index]; }
+            get { return _items[index] as LogFile; }
         }
 
         #endregion
@@ -58,7 +60,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         public void Add(string filename) {
             var size = (new FileInfo(filename)).Length;
 
-            Add(new LogFile(filename, size) { Id = GetNextId() });
+            Add(new LogFile(filename, size));//{ Id = GetNextId() });
         }
 
         /// <summary>
@@ -82,7 +84,7 @@ namespace Medidata.Lumberjack.Core.Data.Collections
                 var filename = filenames[i];
                 var size = (new FileInfo(filename)).Length;
 
-                logFiles[i] = new LogFile(filename, size) { Id = GetNextId() };
+                logFiles[i] = new LogFile(filename, size);// { Id = GetNextId() };
             }
 
             Add(logFiles);
@@ -92,10 +94,10 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// 
         /// </summary>
         /// <returns></returns>
-        [DebuggerStepThrough]
-        public static int GetNextId() {
-            return (int)Interlocked.Increment(ref _id);
-        }
+        //[DebuggerStepThrough]
+        //public static int GetNextId() {
+        //    return (int)Interlocked.Increment(ref _id);
+        //}
 
         /// <summary>
         /// 

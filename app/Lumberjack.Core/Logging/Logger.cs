@@ -367,7 +367,7 @@ namespace Medidata.Lumberjack.Core.Logging
             if (method.DeclaringType == null)
                 return "";
 
-            return method.DeclaringType.UnderlyingSystemType.FullName
+            return method.DeclaringType.UnderlyingSystemType.Name
                    + "." + method.Name + "() : "
                    + frame.GetFileLineNumber();
         }

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
+using Medidata.Lumberjack.Core.Data.Formats;
 
-namespace Medidata.Lumberjack.Core.Data.Collections
+namespace Medidata.Lumberjack.Core.Collections
 {
     /// <summary>
     /// 
@@ -25,23 +26,13 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
+        /// <param name="formatContext"></param>
         /// <returns></returns>
-        public override ContextFormat this[int index] {
+        public ContextFormat this[FormatContextEnum formatContext] {
             [DebuggerStepThrough]
-            get { return _items[index]; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="contextType"></param>
-        /// <returns></returns>
-        public ContextFormat this[FormatContextEnum contextType] {
+            get { return _items[GetContextEnumIndex(formatContext)]; }
             [DebuggerStepThrough]
-            get { return _items[GetContextEnumIndex(contextType)]; }
-            [DebuggerStepThrough]
-            set { _items[GetContextEnumIndex(contextType)] = value; }
+            set { _items[GetContextEnumIndex(formatContext)] = value; }
         }
 
         #endregion
@@ -53,7 +44,6 @@ namespace Medidata.Lumberjack.Core.Data.Collections
         /// </summary>
         /// <param name="contextEnum"></param>
         /// <returns></returns>
-        [DebuggerStepThrough]
         private static int GetContextEnumIndex(FormatContextEnum contextEnum) {
             switch (contextEnum) {
                 case FormatContextEnum.Filename:

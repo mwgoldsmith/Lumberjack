@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Medidata.Lumberjack.Core;
+using Medidata.Lumberjack.Core.Collections;
 using Medidata.Lumberjack.Core.Data;
-using Medidata.Lumberjack.Core.Data.Collections;
+using Medidata.Lumberjack.Core.Data.Fields;
+using Medidata.Lumberjack.Core.Data.Fields.Values;
 using Medidata.Lumberjack.Core.Logging;
 using Medidata.Lumberjack.Core.Processing;
 using Medidata.Lumberjack.UI.Properties;
@@ -31,7 +34,7 @@ namespace Medidata.Lumberjack.UI
 
         private readonly StringBuilder _messageBuffer = new StringBuilder();
 
-        private EntryView _entryView;
+        private FieldValueView<EntryCollection, Entry> _fieldValueView;
         private DateTime _lastUpdate = DateTime.MinValue;
 
         #endregion
@@ -44,7 +47,7 @@ namespace Medidata.Lumberjack.UI
         public MainForm() {
             _logger = Program.Logger;
             _session = Program.UserSession;
-            _entryView = new EntryView(_session);
+            _fieldValueView = new FieldValueView<EntryCollection, Entry>(_session);
 
             InitializeComponent();
 
@@ -62,7 +65,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void MainForm_OnLoad(object sender, EventArgs e) {
-            _logger.Trace("UI-MF-001");
+            _logger.Trace("UI-MF", "Enter");
 
             messageTimer.Enabled = true;
             _session.FieldValues.ValueUpdated += FieldValues_ValueUpdated;
@@ -87,8 +90,8 @@ namespace Medidata.Lumberjack.UI
 
             columns = SettingsManager.LoadEntriesColumns();
             LoadListViewColumns(columns, entriesListView, FieldContextFlags.Entry | FieldContextFlags.Content);
-
-            _logger.Trace("UI-MF-009");
+            
+            _logger.Trace("UI-MF", "Exit");
         }
 
         /// <summary>
@@ -111,6 +114,7 @@ namespace Medidata.Lumberjack.UI
 
             SaveListViewColumns(LogFilesListViewColumnsKey, logsListView);
             SaveListViewColumns(EntriesListViewColumnsKey, entriesListView);
+
             messageTimer.Enabled = false;
         }
 
@@ -368,11 +372,7 @@ namespace Medidata.Lumberjack.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e) {
-            var fields = (from ColumnHeader c in entriesListView.Columns select ((SessionField)c.Tag).Name).ToList();
-            _entryView.RowFields = fields.ToArray();
-
-            _entryView.Refresh();
-            //(new AboutForm()).ShowDialog();
+            (new AboutForm()).ShowDialog();
         }
 
         /// <summary>
@@ -540,12 +540,13 @@ namespace Medidata.Lumberjack.UI
             if (e.Component is LogFile)
                 RefreshLogListItem(logsListView, e.Component as LogFile);
         }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
-        void LogFiles_ItemAdded(object source, CollectionItemEventArgs<LogFile> e) {
+        void LogFiles_ItemAdded(object source, CollectionItemEventArgs<IFieldValueComponent> e) {
             var logFiles = e.Items;
             var lvis = new List<ListViewItem>(logFiles.Length);
 
@@ -557,7 +558,7 @@ namespace Medidata.Lumberjack.UI
                     var lvic = logsListView.Columns;
 
                     // Create list view items for the log files and add to the control
-                    foreach (var logFile in logFiles) {
+                    foreach (LogFile logFile in logFiles) {
                         var items = new string[lvic.Count];
 
                         foreach (ColumnHeader c in lvic)
@@ -583,7 +584,7 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
-        void LogFiles_ItemRemoved(object source, CollectionItemEventArgs<LogFile> e) {
+        void LogFiles_ItemRemoved(object source, CollectionItemEventArgs<IFieldValueComponent> e) {
             var logFiles = e.Items;
 
             this.Invoke(() => {
@@ -610,8 +611,8 @@ namespace Medidata.Lumberjack.UI
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
-        void LogFiles_ItemUpdated(object source, CollectionItemEventArgs<LogFile> e) {
-            e.Items.ToList().ForEach(x => RefreshLogListItem(logsListView, x));
+        void LogFiles_ItemUpdated(object source, CollectionItemEventArgs<IFieldValueComponent> e) {
+            e.Items.ToList().ForEach(x => RefreshLogListItem(logsListView, (LogFile)x));
             _session.ProcessController.Start();
         }
 
@@ -621,35 +622,58 @@ namespace Medidata.Lumberjack.UI
         /// <param name="source"></param>
         /// <param name="e"></param>
         void Entries_ItemAdded(object source, CollectionItemEventArgs<Entry> e) {
-            var entries = e.Items;
-            var lvis = new List<ListViewItem>(entries.Length);
-            var entryValues = new List<IFieldValue>[entries.Length];
+           // var entries = e.Items;
+           // var lvis = new List<ListViewItem>(entries.Length);
 
-            for (var i = 0; i < entries.Length; i++)
-                entryValues[i] = _session.FieldValues.FindAll(entries[i]);
+           // var lvic = entriesListView.Columns;
+           // var fields = (from ColumnHeader c in lvic select ((SessionField)c.Tag).Name).ToList();
+           // _entryView.RowFields = fields.ToArray();
 
-            this.Invoke(() => {
-                lock (_entryLocker) {
-                    var lvic = entriesListView.Columns;
+           //var lvitems = new List<ListViewItem>();
+           // lock (_locker)
+           //     this.Invoke(() => lvitems.AddRange(from ListViewItem l in entriesListView.Items select l), false);
 
-                    // Create list view items for the log files and add to the control
-
-                    for (var i = 0; i < entries.Length; i++) {
-                        var entry = entries[i];
-                        var items = new string[lvic.Count];
-
-                        foreach (ColumnHeader c in lvic)
-                            items[c.DisplayIndex] = (EntryFieldValue)entryValues[i].Find(x => x.FormatField.SessionField.Id == ((SessionField)c.Tag).Id);
+           // lock (_entryLocker) {
 
 
-                        // Set the Tag property of each item to the LogFile it represents
-                        lvis.Add(new ListViewItem(items) { Tag = entry });
-                    }
+           //     countItemToolStripButton.Text = "of " + _session.Entries.Count;
 
-                    countItemToolStripButton.Text = "of " + _session.Entries.Count;
-                    entriesListView.Items.AddRange(lvis.ToArray());
-                }
-            }, false);
+           //     if (!_entryView.Refresh())
+           //         return;
+
+           //     var entryRows = _entryView.ToList();
+
+           //     // Trim leading entry rows which are the same as what's in the list view
+           //     var len = Math.Min(lvitems.Count, entryRows.Count);
+           //     var index = -1;
+           //     for (var i = 0; i < len; i++) {
+           //         var lvi = lvitems[i];
+
+           //         if (!entryRows[i].Entry.Equals(lvi.Tag))
+           //             break;
+
+           //         index = i;
+           //     }
+           //     if (index >= 0)
+           //         entryRows.RemoveRange(0, index + 1);
+
+           //     if (entryRows.Count == 0)
+           //         return;
+
+           //     foreach (var row in entryRows) {
+           //         var entry = row.Entry;
+           //         var items = new string[lvic.Count];
+
+           //         foreach (ColumnHeader c in lvic)
+           //             items[c.DisplayIndex] = (EntryFieldValue)row.FieldValues.Find(x => x.FormatField.SessionField.Equals(c.Tag));
+
+           //         // Set the Tag property of each item to the LogFile it represents
+           //         lvis.Add(new ListViewItem(items) { Tag = entry });
+           //     }
+
+           // }
+           // lock(_locker)
+           // this.Invoke(() => entriesListView.Items.AddRange(lvis.ToArray()), false);
         }
 
         /// <summary>
@@ -670,7 +694,7 @@ namespace Medidata.Lumberjack.UI
             var logFile = e.LogFile;
 
             if (e.ProcessType == ProcessTypeEnum.Hash && logFile.HashStatus == EngineStatusEnum.Completed) {
-                var dupe = _session.LogFiles.Any(x => x.Id != logFile.Id && x.Md5Hash != null && x.Md5Hash.Equals(logFile.Md5Hash));
+                var dupe = _session.LogFiles.Any(x => x.Id != logFile.Id && ((LogFile)x).Md5Hash != null && ((LogFile)x).Md5Hash.Equals(logFile.Md5Hash));
                 if (dupe) {
                     var msg = String.Format("File with hash {0} already exists in session. Removing \"{1}\".", logFile.Md5Hash, logFile.Filename);
 

@@ -1,29 +1,32 @@
 ﻿using System.Xml.Serialization;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Formats
 {
     /// <summary>
     /// 
     /// </summary>
     [XmlType(IncludeInSchema = false)]
-    public enum FieldDataTypeEnum
+    public enum FormatContextEnum
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        [XmlEnum(Name = "string")]
-        String,
+        [XmlIgnore]
+        None = 0,
 
         /// <summary>
         /// 
         /// </summary>
-        [XmlEnum(Name = "integer")]
-        Integer,
+        [XmlEnum(Name = "filename")]
+        Filename = 1,
 
         /// <summary>
         /// 
         /// </summary>
-        [XmlEnum(Name = "datetime")]
-        DateTime
+        [XmlEnum(Name = "entry")]
+        Entry = 2,
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [XmlEnum(Name = "content")]
+        Content = 3
     }
 }

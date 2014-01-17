@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Xml.Serialization;
 using Medidata.Lumberjack.Core.Logging;
 
-namespace Medidata.Lumberjack.Core.Data
+namespace Medidata.Lumberjack.Core.Data.Fields
 {
     /// <summary>
     /// 
