@@ -338,7 +338,7 @@ namespace Medidata.Lumberjack.UI
                         // TODO: this log does not contains a format field linked to the selected session field. Notify user
                     } else {
                         // Add value if non-existant; else, update
-                        _session.FieldValues.Update(logFile, null, formatField, value);
+                        _session.FieldValues.Update(logFile, formatField, value);
                     }
                 }
             } else {
@@ -730,7 +730,7 @@ namespace Medidata.Lumberjack.UI
                     // Get the value of the field to be used for the ListItem
                     // Only use the field value if every logfile which has a format field
                     // linked to the same session field also has the same field value.
-                    var value = _session.FieldValues.Find(logFile, null,formatField);
+                    var value = _session.FieldValues.Find(logFile,formatField);
                     if (value == null || !TestAllFieldValues(logFiles, sessionField, value.ToString()))
                         value = null;
 
@@ -781,7 +781,7 @@ namespace Medidata.Lumberjack.UI
                     // Get the value of the field to be used for the ListItem
                     // Only use the field value if every logfile which has a format field
                     // linked to the same session field also has the same field value.
-                    var value = _session.FieldValues.Find(logFile, null,f);
+                    var value = _session.FieldValues.Find(logFile,f);
                     if (value == null || !TestAllFieldValues(logFiles, f, value.ToString()))
                         value = null;
 
@@ -819,7 +819,7 @@ namespace Medidata.Lumberjack.UI
                 if (formatField == null)
                     continue;
 
-                var fieldValue = _session.FieldValues.Find(logFile, null,formatField);
+                var fieldValue = _session.FieldValues.Find(logFile,formatField);
                 if (fieldValue == null || !value.Equals(fieldValue.ToString()))
                     return false;
             }
@@ -845,7 +845,7 @@ namespace Medidata.Lumberjack.UI
                 if (!sessionFormat.Contexts[FormatContextEnum.Filename].Fields.Contains(formatField))
                     continue;
 
-                var fieldValue = _session.FieldValues.Find(logFile, null,formatField);
+                var fieldValue = _session.FieldValues.Find(logFile,formatField);
                 if (fieldValue == null || !value.Equals(fieldValue.ToString()))
                     return false;
             }

@@ -158,6 +158,8 @@ namespace Medidata.Lumberjack.Core.Data
 
         #region Initializers
 
+        private new int Id { get; set; }
+
         /// <summary>
         /// 
         /// </summary>

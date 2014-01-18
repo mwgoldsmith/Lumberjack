@@ -9,7 +9,7 @@ namespace Medidata.Lumberjack.Core.Collections
     /// <summary>
     /// 
     /// </summary>
-    public sealed class FieldValueCollection : CollectionBase<IFieldValue>
+    public sealed class FieldValueCollection : CollectionBase<FieldValue>
     {
         /*
         // TODO: implement. Use a seperate bucket for each string length to boost performance
@@ -55,7 +55,7 @@ namespace Medidata.Lumberjack.Core.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public IFieldValue this[int index] {
+        public FieldValue this[int index] {
             get { return _items[index]; }
         }
 
@@ -66,50 +66,54 @@ namespace Medidata.Lumberjack.Core.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="logFile"></param>
-        /// <param name="entry"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fieldItem"></param>
         /// <param name="formatField"></param>
-        /// <returns></returns>
-        public IFieldValue Find(LogFile logFile, Entry entry, FormatField formatField) {
-            if (logFile == null && entry == null)
-                throw new ArgumentNullException("logFile");
-            if (formatField == null)
-                throw new ArgumentNullException("formatField");
-
-            return Find(logFile, entry, formatField.Id, false);
+        /// <param name="value"></param>
+        public void Add<T>(FieldItemBase fieldItem, FormatField formatField, T value) {
+            Add(FieldValueFactory.CreateLogValue(fieldItem, formatField, value));
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="logFile"></param>
+        /// <param name="fieldItem"></param>
+        /// <param name="fieldComponent"></param>
+        /// <returns></returns>
+        public FieldValue Find<T>(FieldItemBase fieldItem, T fieldComponent)
+            where T : FieldKeyedBase<T>, IFieldValueComponent {
+            if (fieldItem == null)
+                throw new ArgumentNullException("fieldItem");
+            if (fieldComponent == null)
+                throw new ArgumentNullException("fieldComponent");
+            var len = _items.Count;
+
+            for (var i = 0; i < len; i++) {
+                var f = _items[i];
+
+                if (f.Item.Equals(fieldItem) && f.ContainsComponent(fieldComponent))
+                    return f;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="entry"></param>
-        /// <param name="sessionField"></param>
         /// <returns></returns>
-        public IFieldValue Find(LogFile logFile, Entry entry, SessionField sessionField) {
-            if (logFile == null && entry == null)
-                throw new ArgumentNullException("logFile");
-            if (sessionField == null)
-                throw new ArgumentNullException("sessionField");
-
-            return Find(logFile, entry, sessionField.Id, true);
+        public List<FieldValue> FindAll(Entry entry) {
+            return FindAll(x => x.Item, entry.Id);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sessionField"></param>
-        /// <returns></returns>
-        public List<IFieldValue> FindAll(SessionField sessionField) {
-            return FindAll(x => x.FormatField != null ? x.FormatField.SessionField : null, sessionField.Id);
-        }
 
         /// <summary>
         /// Finds all existing values for the specified FormatField.
         /// </summary>
         /// <param name="formatField"></param>
         /// <returns></returns>
-        public List<IFieldValue> FindAll(FormatField formatField) {
+        public List<FieldValue> FindAll(FormatField formatField) {
             return FindAll(x => x.FormatField, formatField.Id);
         }
 
@@ -118,78 +122,48 @@ namespace Medidata.Lumberjack.Core.Collections
         /// </summary>
         /// <param name="logFile"></param>
         /// <returns></returns>
-        public List<IFieldValue> FindAll(LogFile logFile) {
-            return FindAll(x => x.LogFile, logFile.Id);
+        public List<FieldValue> FindAll(LogFile logFile) {
+            return FindAll(x => x.Item, logFile.Id);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="entry"></param>
+        /// <param name="sessionField"></param>
         /// <returns></returns>
-        public List<IFieldValue> FindAll(Entry entry) {
-            return FindAll(x => x.Entry, entry.Id);
+        public List<FieldValue> FindAll(SessionField sessionField) {
+            return FindAll(x => x.SessionField, sessionField.Id);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="logFile"></param>
+        /// <param name="fieldItem"></param>
         /// <param name="formatField"></param>
         /// <param name="value"></param>
-        public void Add<T>(LogFile logFile,  FormatField formatField, T value) {
-            Add(FieldValueFactory.CreateLogValue(logFile, formatField, value));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entry"></param>
-        /// <param name="formatField"></param>
-        /// <param name="value"></param>
-        public void Add<T>(Entry entry, FormatField formatField, T value) {
-            Add(FieldValueFactory.CreateEntryValue(entry, formatField, value));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="logFile"></param>
-        /// <param name="entry"></param>
-        /// <param name="formatField"></param>
-        /// <param name="value"></param>
-        public void Update<T>(LogFile logFile, Entry entry, FormatField formatField, T value) {
-            var formatFieldId = formatField.Id;
+        public void Update<T>(FieldItemBase fieldItem, FormatField formatField, T value) {
             var changed = false;
-            var id = entry != null ? entry.Id : logFile.Id;
 
             lock (_locker) {
                 var len = _items.Count;
 
                 // Remove the field value lookup if it already exists
                 for (var i = 0; i < len; i++) {
-                    var item = _items[i];
-                    if (item.FormatField.Id != formatFieldId || (item.Entry == null && entry != null))
-                        continue;
-                    if (entry != null ? id != item.Entry.Id : id != item.LogFile.Id)
-                        continue;
+                    var f = _items[i];
 
-                    _items.Remove(_items[i]);
-                    changed = true;
-                    break;
+                    if (f.ContainsComponent(fieldItem) && f.ContainsComponent(formatField)) {
+                        _items.Remove(_items[i]);
+                        changed = true;
+                        break;
+                    }
                 }
             }
 
             // Add the field value
-            if (entry == null)
-                Add(logFile, formatField, value);
-            else 
-                Add(entry, formatField, value);
+            Add(fieldItem, formatField, value);
 
-            OnValueUpdated(entry == null ? logFile : (FieldItemBase)entry, formatField, value, changed);
+            OnValueUpdated(fieldItem, formatField, value, changed);
         }
 
         #endregion
@@ -199,52 +173,11 @@ namespace Medidata.Lumberjack.Core.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="logFile"></param>
-        /// <param name="entry"></param>
-        /// <param name="fieldId"></param>
-        /// <param name="isSessionId"></param>
-        /// <returns></returns>
-        private IFieldValue Find(LogFile logFile, Entry entry, int fieldId, bool isSessionId) {
-            if (logFile == null && entry == null)
-                throw new ArgumentNullException("logFile");
-
-            var len = _items.Count;
-
-            for (var i = 0; i < len; i++) {
-                var item = _items[i];
-
-                int id;
-                if (isSessionId) {
-                    if (item.FormatField == null || item.FormatField.SessionField == null)
-                        continue;
-
-                    id = item.FormatField.SessionField.Id;
-                } else {
-                    if (item.FormatField == null)
-                        continue;
-
-                    id = item.FormatField.Id;
-                }
-
-                if (fieldId != id)
-                    continue;
-
-                if ((item.Entry != null) ? item.Entry.Equals(entry) : item.LogFile.Equals(logFile))
-                    return item;
-                //GetValue(dataType, item.Index);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="selector"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        private List<IFieldValue> FindAll(Func<IFieldValue, IFieldValueComponent> selector, int id) {
-            var result = new List<IFieldValue>();
+        private List<FieldValue> FindAll(Func<FieldValue, IFieldValueComponent> selector, int id) {
+            var result = new List<FieldValue>();
 
             lock (_locker) {
                 var len = _items.Count;

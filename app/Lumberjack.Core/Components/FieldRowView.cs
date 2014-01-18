@@ -17,7 +17,7 @@ namespace Medidata.Lumberjack.Core.Components
         /// </summary>
         /// <param name="item"></param>
         /// <param name="fieldValues"></param>
-        public FieldRowView(T item, List<IFieldValue> fieldValues) {
+        public FieldRowView(T item, List<FieldValue> fieldValues) {
             Item = item;
             FieldValues = fieldValues;
         }
@@ -34,7 +34,7 @@ namespace Medidata.Lumberjack.Core.Components
         /// <summary>
         /// 
         /// </summary>
-        public List<IFieldValue> FieldValues { get; private set; }
+        public List<FieldValue> FieldValues { get; private set; }
 
         #endregion
     }

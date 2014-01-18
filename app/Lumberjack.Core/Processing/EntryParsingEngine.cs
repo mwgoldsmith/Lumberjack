@@ -80,7 +80,7 @@ namespace Medidata.Lumberjack.Core.Processing
 
                     var buffer = new Char[BufferSize];
                     var entries = new List<Entry>(1024);
-                    var values = new List<EntryFieldValue>(4096);
+                    var values = new List<FieldValue>(4096);
                     var remaining = "";
 
                     OnProgressChanged(engineMetrics, logFile);
@@ -110,7 +110,7 @@ namespace Medidata.Lumberjack.Core.Processing
 
                             // TODO: Special case needs to be implemented for TIMESTAMP field
 
-                            var fieldValues = FieldValueFactory.MatchEntryValues(entry, ContextType, match, FieldValuePredicate);
+                            var fieldValues = FieldValueFactory.MatchFieldValues(entry, ContextType, match, FieldValuePredicate);
                             if (fieldValues != null) {
                                 values.AddRange(fieldValues);
                                 logFile.EntryStats.TotalEntries++;
@@ -203,17 +203,17 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="logFieldValue"></param>
+        /// <param name="fieldValue"></param>
         /// <returns></returns>
-        private static bool FieldValuePredicate(LogFieldValue logFieldValue) {
-            var logFile = logFieldValue.LogFile;
-            var formatField = logFieldValue.FormatField;
+        private static bool FieldValuePredicate(FieldValue fieldValue) {
+            var logFile = fieldValue.LogFile;
+            var formatField = fieldValue.FormatField;
 
             if (!formatField.Filterable && formatField.DataType == FieldDataTypeEnum.String)
                 return false;
 
             if (formatField.Name.Equals("LEVEL")) {
-                switch (logFieldValue.ToString().ToUpper()) {
+                switch (fieldValue.ToString().ToUpper()) {
                     case "TRACE":
                         logFile.EntryStats.Trace++;
                         break;

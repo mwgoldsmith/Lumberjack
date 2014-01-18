@@ -25,6 +25,8 @@ namespace Medidata.Lumberjack.Core.Data
 
         #region Properties
 
+        private new int Id { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -62,7 +64,7 @@ namespace Medidata.Lumberjack.Core.Data
         /// <param name="other"></param>
         /// <returns></returns>
         public int CompareTo(Entry other) {
-            return other == null ? 1 : (LogFile.Id == other.LogFile.Id)
+            return other == null ? 1 : (LogFile.Equals(other.LogFile))
                 ? Position.CompareTo(other.Position)
                 : LogFile.CompareTo(other.LogFile);
         }

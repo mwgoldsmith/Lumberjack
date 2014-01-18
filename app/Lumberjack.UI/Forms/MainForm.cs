@@ -695,7 +695,7 @@ namespace Medidata.Lumberjack.UI
             var logFile = e.LogFile;
 
             if (e.ProcessType == ProcessTypeEnum.Hash && logFile.HashStatus == EngineStatusEnum.Completed) {
-                var dupe = _session.LogFiles.Any(x => x.Id != logFile.Id && ((LogFile)x).Md5Hash != null && ((LogFile)x).Md5Hash.Equals(logFile.Md5Hash));
+                var dupe = _session.LogFiles.Any(x => !x.Equals(logFile) && ((LogFile)x).Md5Hash != null && ((LogFile)x).Md5Hash.Equals(logFile.Md5Hash));
                 if (dupe) {
                     var msg = String.Format("File with hash {0} already exists in session. Removing \"{1}\".", logFile.Md5Hash, logFile.Filename);
 
@@ -980,7 +980,7 @@ namespace Medidata.Lumberjack.UI
                         throw new InvalidOperationException("Cannot retrieve value for field '" + sessionField.Name + "': does not exist within 'Filename' context.");
 
                     // Get the field value and format it based on the info specified by Field
-                    var value = _session.FieldValues.Find(logFile, null, sessionField);
+                    var value = _session.FieldValues.Find((FieldItemBase)logFile, sessionField);
                     return value != null ? value.ToString() : "";
             }
         }

@@ -77,7 +77,7 @@ namespace Medidata.Lumberjack.Core.Processing
                 // Parse all filename fields for this log file. If successful, no need to check
                 // other formats
 
-                var fieldValues = FieldValueFactory.MatchLogValues(logFile, ContextType, match, FieldValuePredicate);
+                var fieldValues = FieldValueFactory.MatchFieldValues(logFile, ContextType, match, FieldValuePredicate);
                 if (fieldValues == null)
                     break;
 
@@ -136,10 +136,10 @@ namespace Medidata.Lumberjack.Core.Processing
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="logFieldValue"></param>
+        /// <param name="fieldValue"></param>
         /// <returns></returns>
-        private static bool FieldValuePredicate(LogFieldValue logFieldValue) {
-            var formatField = logFieldValue.FormatField;
+        private static bool FieldValuePredicate(FieldValue fieldValue) {
+            var formatField = fieldValue.FormatField;
 
             if (formatField.Filterable || formatField.DataType != FieldDataTypeEnum.String)
                 return false;

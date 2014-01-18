@@ -108,16 +108,14 @@
     <Compile Include="Data\Fields\Values\IValueItemCollection.cs" />
     <Compile Include="Data\Formats\ContextFormat.cs" />
     <Compile Include="Data\Entry.cs" />
-    <Compile Include="Data\Fields\Values\EntryFieldValue.cs" />
     <Compile Include="Data\Fields\FieldBase.cs" />
     <Compile Include="Data\Fields\FieldContextFlags.cs" />
     <Compile Include="Data\Fields\FieldDataTypeEnum.cs" />
     <Compile Include="Data\Fields\FieldKeyedBase.cs" />
-    <Compile Include="Data\Fields\Values\IFieldValue.cs" />
     <Compile Include="Data\IKeyedItem.cs" />
     <Compile Include="Data\KeyedBase.cs" />
     <Compile Include="Data\KeyGenerator.cs" />
-    <Compile Include="Data\Fields\Values\LogFieldValue.cs" />
+    <Compile Include="Data\Fields\Values\FieldValue.cs" />
     <Compile Include="Data\Fields\Values\FieldValueFactory.cs" />
     <Compile Include="Data\Formats\FormatContextEnum.cs" />
     <Compile Include="Data\Fields\FormatField.cs" />
