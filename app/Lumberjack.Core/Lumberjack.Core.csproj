@@ -79,7 +79,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\FieldValueView.cs" />
+    <Compile Include="Components\FieldView.cs" />
+    <Compile Include="Components\FieldRowView.cs" />
+    <Compile Include="Components\ObjectPropertyComparer.cs" />
     <Compile Include="Config\ConfigurableBase.cs" />
     <Compile Include="Config\Fields\FieldConfigurator.cs" />
     <Compile Include="Config\Fields\FieldContextElement.cs" />
@@ -102,6 +104,8 @@
     <Compile Include="Collections\LogFileCollection.cs" />
     <Compile Include="Collections\SessionFieldCollection.cs" />
     <Compile Include="Collections\SessionFormatCollection.cs" />
+    <Compile Include="Data\FieldItemBase.cs" />
+    <Compile Include="Data\Fields\Values\IValueItemCollection.cs" />
     <Compile Include="Data\Formats\ContextFormat.cs" />
     <Compile Include="Data\Entry.cs" />
     <Compile Include="Data\Fields\Values\EntryFieldValue.cs" />
@@ -110,7 +114,6 @@
     <Compile Include="Data\Fields\FieldDataTypeEnum.cs" />
     <Compile Include="Data\Fields\FieldKeyedBase.cs" />
     <Compile Include="Data\Fields\Values\IFieldValue.cs" />
-    <Compile Include="Data\Fields\Values\IFieldValueItem.cs" />
     <Compile Include="Data\IKeyedItem.cs" />
     <Compile Include="Data\KeyedBase.cs" />
     <Compile Include="Data\KeyGenerator.cs" />

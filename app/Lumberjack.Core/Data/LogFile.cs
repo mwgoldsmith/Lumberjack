@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Medidata.Lumberjack.Core.Data.Fields.Values;
 using Medidata.Lumberjack.Core.Data.Formats;
 using Medidata.Lumberjack.Core.Processing;
 
@@ -10,7 +9,7 @@ namespace Medidata.Lumberjack.Core.Data
     /// <summary>
     /// 
     /// </summary>
-    public sealed class LogFile : KeyedBase<IFieldValueComponent>, IFieldValueComponent
+    public sealed class LogFile : FieldItemBase, IComparable<LogFile>
     {
         #region Nested classes
 
@@ -231,16 +230,15 @@ namespace Medidata.Lumberjack.Core.Data
 
         #endregion
 
-        #region KeyedBase overrides
+        #region IComparable<> implementation
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public override int CompareTo(IFieldValueComponent other) {
-            var logFile = other as LogFile;
-            return logFile == null ? 1 : Filesize.CompareTo(logFile.Filesize);
+        public int CompareTo(LogFile other) {
+            return other == null ? 1 : Filesize.CompareTo(other.Filesize);
         }
 
         #endregion

@@ -1,6 +1,6 @@
 ﻿using System;
+using Medidata.Lumberjack.Core.Data;
 using Medidata.Lumberjack.Core.Data.Fields;
-using Medidata.Lumberjack.Core.Data.Fields.Values;
 
 namespace Medidata.Lumberjack.Core.Collections
 {
@@ -23,12 +23,12 @@ namespace Medidata.Lumberjack.Core.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="component"></param>
+        /// <param name="fieldItem"></param>
         /// <param name="formatField"></param>
         /// <param name="value"></param>
         /// <param name="changed"></param>
-        public ValueUpdatedEventArgs(IFieldValueComponent component, FormatField formatField, object value, bool changed) {
-            Component = component;
+        public ValueUpdatedEventArgs(FieldItemBase fieldItem, FormatField formatField, object value, bool changed) {
+            FieldItem = fieldItem;
             FormatField = formatField;
             Value = value;
             Changed = changed;
@@ -37,7 +37,7 @@ namespace Medidata.Lumberjack.Core.Collections
         /// <summary>
         /// 
         /// </summary>
-        public IFieldValueComponent Component { get; private set; }
+        public FieldItemBase FieldItem { get; private set; }
 
         /// <summary>
         /// 

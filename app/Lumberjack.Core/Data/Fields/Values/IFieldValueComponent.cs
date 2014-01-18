@@ -2,7 +2,7 @@
 
 namespace Medidata.Lumberjack.Core.Data.Fields.Values
 {
-    public interface IFieldValueComponent : IKeyedItem, IEquatable<IFieldValueComponent>
+    public interface IFieldValueComponent : IEquatable<IFieldValueComponent>, IKeyedItem
     {
     }
 }

@@ -5,7 +5,7 @@ namespace Medidata.Lumberjack.Core.Data
     /// <summary>
     /// 
     /// </summary>
-    public abstract class KeyedBase<T> : IKeyedItem, IComparable, IEquatable<T>, IComparable<T>
+    public abstract class KeyedBase<T> : IEquatable<T>, IKeyedItem
         where T : class, IKeyedItem
     { 
         #region Initializers
@@ -29,39 +29,6 @@ namespace Medidata.Lumberjack.Core.Data
 
         #endregion
 
-        #region IComparable implementation
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        int IComparable.CompareTo(object obj) {
-            if (obj == null)
-                return 1;
-
-            var other = obj as T;
-            if (other == null)
-                throw new ArgumentException("Object is not an instance of " + (typeof(T).Name));
-
-            return CompareTo(other);
-        }
-
-        #endregion
-
-        #region IComparable<> implementation
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public virtual int CompareTo(T other) {
-            return other == null ? 1 : Id.CompareTo(other.Id);
-        }
-
-        #endregion
-
         #region IEquatable<> implementation
 
         /// <summary>
@@ -69,7 +36,7 @@ namespace Medidata.Lumberjack.Core.Data
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public virtual  bool Equals(T other) {
+        public bool Equals(T other) {
             return other != null && other.Id == Id;
         }
 

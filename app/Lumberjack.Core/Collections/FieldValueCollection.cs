@@ -11,6 +11,7 @@ namespace Medidata.Lumberjack.Core.Collections
     /// </summary>
     public sealed class FieldValueCollection : CollectionBase<IFieldValue>
     {
+        /*
         // TODO: implement. Use a seperate bucket for each string length to boost performance
         // when searching for string field values
         private class StringBuckets
@@ -23,9 +24,8 @@ namespace Medidata.Lumberjack.Core.Collections
                 for (var i=0;i<numBuckets;i++)
                     _buckets[i] = new List<string>();
             }
-
         }
-
+        */
 
         #region Event Handlers
 
@@ -189,7 +189,7 @@ namespace Medidata.Lumberjack.Core.Collections
             else 
                 Add(entry, formatField, value);
 
-            OnValueUpdated(entry, formatField, value, changed);
+            OnValueUpdated(entry == null ? logFile : (FieldItemBase)entry, formatField, value, changed);
         }
 
         #endregion
@@ -207,9 +207,6 @@ namespace Medidata.Lumberjack.Core.Collections
         private IFieldValue Find(LogFile logFile, Entry entry, int fieldId, bool isSessionId) {
             if (logFile == null && entry == null)
                 throw new ArgumentNullException("logFile");
-
-            var logId = logFile != null ? logFile.Id : entry.LogFile.Id;
-            var entryId = entry != null ? entry.Id : -1;
 
             var len = _items.Count;
 
@@ -232,7 +229,7 @@ namespace Medidata.Lumberjack.Core.Collections
                 if (fieldId != id)
                     continue;
 
-                if ((item.Entry != null) ? item.Entry.Id == entryId : item.LogFile.Id == logId)
+                if ((item.Entry != null) ? item.Entry.Equals(entry) : item.LogFile.Equals(logFile))
                     return item;
                 //GetValue(dataType, item.Index);
             }
@@ -266,13 +263,13 @@ namespace Medidata.Lumberjack.Core.Collections
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="component"></param>
+        /// <param name="fieldItem"></param>
         /// <param name="formatField"></param>
         /// <param name="value"></param>
         /// <param name="changed"></param>
-        private void OnValueUpdated(IFieldValueComponent component, FormatField formatField, object value, bool changed) {
+        private void OnValueUpdated(FieldItemBase fieldItem, FormatField formatField, object value, bool changed) {
             if (ValueUpdated != null) {
-                ValueUpdated(this, new ValueUpdatedEventArgs(component, formatField, value, changed));
+                ValueUpdated(this, new ValueUpdatedEventArgs(fieldItem, formatField, value, changed));
             }
         }
 

@@ -4,8 +4,8 @@
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IValueItemCollection<T> 
-        where T : KeyedBase<IFieldValueComponent>
+    public interface IValueItemCollection<T>
+        where T : FieldItemBase
     {
     }
 }

@@ -1,12 +1,11 @@
 ﻿using System;
-using Medidata.Lumberjack.Core.Data.Fields.Values;
 
 namespace Medidata.Lumberjack.Core.Data
 {
     /// <summary>
     /// 
     /// </summary>
-    public sealed class Entry : KeyedBase<IFieldValueComponent>, IFieldValueComponent
+    public sealed class Entry : FieldItemBase, IComparable<Entry>
     {
         #region Initializers
 
@@ -55,19 +54,17 @@ namespace Medidata.Lumberjack.Core.Data
 
         #endregion
 
-        #region KeyedBase overrides
+        #region IComparable<> implementation
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public override int CompareTo(IFieldValueComponent other) {
-            var entry = other as Entry;
-
-            return entry == null ? 1 : (LogFile.Id == entry.LogFile.Id)
-                ? Position.CompareTo(entry.Position)
-                : LogFile.CompareTo(entry.LogFile);
+        public int CompareTo(Entry other) {
+            return other == null ? 1 : (LogFile.Id == other.LogFile.Id)
+                ? Position.CompareTo(other.Position)
+                : LogFile.CompareTo(other.LogFile);
         }
 
         #endregion

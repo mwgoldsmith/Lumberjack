@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using Medidata.Lumberjack.Core;
 using Medidata.Lumberjack.Core.Collections;
+using Medidata.Lumberjack.Core.Components;
 using Medidata.Lumberjack.Core.Data;
 using Medidata.Lumberjack.Core.Data.Fields;
 using Medidata.Lumberjack.Core.Data.Fields.Values;
@@ -34,7 +35,7 @@ namespace Medidata.Lumberjack.UI
 
         private readonly StringBuilder _messageBuffer = new StringBuilder();
 
-        private FieldValueView<EntryCollection, Entry> _fieldValueView;
+        private FieldView<EntryCollection, Entry> _fieldView;
         private DateTime _lastUpdate = DateTime.MinValue;
 
         #endregion
@@ -47,7 +48,7 @@ namespace Medidata.Lumberjack.UI
         public MainForm() {
             _logger = Program.Logger;
             _session = Program.UserSession;
-            _fieldValueView = new FieldValueView<EntryCollection, Entry>(_session);
+            _fieldView = new FieldView<EntryCollection, Entry>(_session);
 
             InitializeComponent();
 
@@ -537,8 +538,8 @@ namespace Medidata.Lumberjack.UI
         /// <param name="source"></param>
         /// <param name="e"></param>
         void FieldValues_ValueUpdated(object source, ValueUpdatedEventArgs e) {
-            if (e.Component is LogFile)
-                RefreshLogListItem(logsListView, e.Component as LogFile);
+            if (e.FieldItem is LogFile)
+                RefreshLogListItem(logsListView, e.FieldItem as LogFile);
         }
 
         /// <summary>

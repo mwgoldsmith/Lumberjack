@@ -9,158 +9,76 @@ using Medidata.Lumberjack.Core.Data.Fields.Values;
 
 namespace Medidata.Lumberjack.Core.Components
 {
+
+    internal sealed class FieldViewPropertyDescriptor<TCollection, TItem> : PropertyDescriptor
+        where TCollection : class, IValueItemCollection<TItem>
+        where TItem : FieldItemBase
+    {
+        private IValueItemCollection<TItem> _collection;
+
+        public IValueItemCollection<TItem> Collection {
+            get {return _collection;}
+        }
+
+        public override Type ComponentType {
+            get { return typeof(KeyedBase<IFieldValueComponent>); }
+        }
+
+        public override bool IsReadOnly {
+            get {return false;}
+        }
+
+        public override Type PropertyType {
+            get {return typeof(IBindingList);}
+        }
+
+        internal FieldViewPropertyDescriptor(IValueItemCollection<TItem> collection)
+            : base(collection.GetType().Name, null) {
+            _collection = collection;
+        }
+
+        public override bool Equals(object other) {
+            if (other is FieldViewPropertyDescriptor<TCollection, TItem>)
+                return ((FieldViewPropertyDescriptor<TCollection, TItem>)other).Collection == Collection;
+
+            return false;
+        }
+
+        public override int GetHashCode() {
+            return Collection.GetHashCode();
+        }
+
+        public override bool CanResetValue(object component) {
+            return false;
+        }
+
+        public override object GetValue(object component) {
+            return (object)((FieldViewPropertyDescriptor<TCollection, TItem>)component).GetFieldValueView(_collection);
+        }
+
+        internal FieldViewPropertyDescriptor<TCollection, TItem>  GetFieldValueView(IValueItemCollection<TItem> collection) {
+            var valueItemTable = new FieldView<TCollection, TItem>(_collection);
+            throw new NotImplementedException();
+        }
+
+        public override void ResetValue(object component) {
+        }
+
+        public override void SetValue(object component, object value) {
+        }
+
+        public override bool ShouldSerializeValue(object component) {
+            return false;
+        }
+    }
+   
     /// <summary>
     /// 
     /// </summary>
-    public class FieldValueView<TCollection, TItem> : BindingList<TItem>, IBindingList, ITypedList
-        where TCollection : IValueItemCollection<TItem>
-        where TItem : KeyedBase<IFieldValueComponent>
+    public class FieldView<TCollection, TItem> : BindingList<TItem>, IBindingList, ITypedList
+        where TCollection : class, IValueItemCollection<TItem>
+        where TItem : FieldItemBase
     {
-        #region Nested structs
-
-        #region FieldValueViewRow
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public sealed class FieldValueViewRow
-        {
-            #region Initializers
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="item"></param>
-            /// <param name="fieldValues"></param>
-            public FieldValueViewRow(TItem item, List<IFieldValue> fieldValues) {
-                Item = item;
-                FieldValues = fieldValues;
-            }
-
-            #endregion
-
-            #region Properties
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public TItem Item { get; private set; }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public List<IFieldValue> FieldValues { get; private set; }
-            
-            #endregion
-        }
-
-        #endregion
-
-        #region ObjectPropertyComparer
-
-        /// <summary>
-        /// Summary description for ObjectComparer.
-        /// </summary>
-        private sealed class ObjectPropertyComparer : IEqualityComparer<TItem>, IComparer
-        {
-            #region Private fields
-
-            // ReSharper disable StaticFieldInGenericType
-            private static readonly ObjectPropertyComparer _default = new ObjectPropertyComparer();
-            // ReSharper restore StaticFieldInGenericType
-
-            private readonly string _propertyName;
-
-            #endregion
-
-            #region Initializers
-
-            /// <summary>
-            /// 
-            /// </summary>
-            private ObjectPropertyComparer() :this(null) {
-            }
-
-            /// <summary>
-            /// Provides Comparison opreations.
-            /// </summary>
-            /// <param name="propertyName">The property to compare</param>
-            public ObjectPropertyComparer(string propertyName) {
-                _propertyName = propertyName;
-            }
-
-            #endregion
-
-            #region Properties
-
-            /// <summary>
-            /// 
-            /// </summary>
-            internal static ObjectPropertyComparer Default {
-                get { return _default; }
-            }
-
-            #endregion
-
-            #region IComparer implementation
-
-            /// <summary>
-            /// Compares 2 objects by their properties, given on the constructor
-            /// </summary>
-            /// <param name="x">First value to compare</param>
-            /// <param name="y">Second value to compare</param>
-            /// <returns></returns>
-            public int Compare(object x, object y) {
-                object a;
-                object b;
-
-                if (_propertyName != null) {
-                    a = x.GetType().GetProperty(_propertyName).GetValue(x, null);
-                    b = y.GetType().GetProperty(_propertyName).GetValue(y, null);
-                } else {
-                    a = ((TItem)x).Id;
-                    b = ((TItem)y).Id;
-                }
-
-                if (a != null && b == null)
-                    return 1;
-
-                if (a == null && b != null)
-                    return -1;
-
-                return a == null ? 0 : ((IComparable)a).CompareTo(b);
-            }
-
-            #endregion
-
-            #region IEqualityComparer<> implementation
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="x"></param>
-            /// <param name="y"></param>
-            /// <returns></returns>
-            public bool Equals(TItem x, TItem y) {
-                return x.Id == y.Id;
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="obj"></param>
-            /// <returns></returns>
-            public int GetHashCode(TItem obj) {
-                return obj.Id;
-            }
-
-            #endregion
-        }
-        
-        #endregion
-
-        #endregion
-
         #region Constants
 
         private const int DefaultPerPage = 500;
@@ -171,12 +89,15 @@ namespace Medidata.Lumberjack.Core.Components
         #region Private fields
 
         // ReSharper disable StaticFieldInGenericType
+        internal static Attribute[] _bindPropertyFilter = new Attribute[] {new BrowsableAttribute(true), new BindableAttribute(false)};
         internal static ListChangedEventArgs _resetEventArgs = new ListChangedEventArgs(ListChangedType.Reset, -1);
         // ReSharper restore StaticFieldInGenericType
 
-        private readonly Dictionary<TItem, FieldValueViewRow> _rowViewBuffer = new Dictionary<TItem, FieldValueViewRow>(ObjectPropertyComparer.Default);
+        private readonly ObjectPropertyComparer<TItem> _comparer;
+        private readonly Dictionary<TItem, FieldRowView<TItem>> _rowViewBuffer;
+        private readonly PropertyDescriptorCollection _properties;
 
-        private readonly EntryCollection _sessionEntries;
+        private TCollection _dataSource;
         private readonly SessionFieldCollection _sessionFields;
         private readonly FormatFieldCollection _formatFields;
         private readonly FieldValueCollection _fieldValues;
@@ -211,23 +132,36 @@ namespace Medidata.Lumberjack.Core.Components
         /// <summary>
         /// 
         /// </summary>
-        [Obsolete]
-        internal FieldValueView()
-            : this(null) {
+        internal FieldView() {
+            // Used the default comparer for TItem by default
+            _comparer = ObjectPropertyComparer<TItem>.Default;
+
+            /* 
+             * Retrieve the properties of the field value item to bind to. Restrict to
+             * those where the neither the Browsable nor Bindable attributes have been
+             * set to false.
+             */
+            _properties = TypeDescriptor.GetProperties(typeof(TItem), _bindPropertyFilter);
+            _properties.Sort();
 
         }
-        
+
+        internal FieldView(IValueItemCollection<TItem> collection) {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="session"></param>
-        public FieldValueView(UserSession session) {
+        public FieldView(UserSession session):this() {
+            _rowViewBuffer = new Dictionary<TItem, FieldRowView<TItem>>(_comparer);
+
             _itemFields = new SessionFieldCollection(session);
 
             _sortDirection = ListSortDirection.Ascending;
             _pageSize = DefaultPerPage;
 
-            _sessionEntries = session.Entries;
             _sessionFields = session.SessionFields;
             _formatFields = session.FormatFields;
             _fieldValues = session.FieldValues;
@@ -246,6 +180,28 @@ namespace Medidata.Lumberjack.Core.Components
             get { return _itemFields; }
         }
 
+        public TCollection DataSource {
+            get { return _dataSource; }
+            set {
+                if (_dataSource.Equals(value))
+                    return;
+
+                if (_dataSource != null) {
+                    // TODO: perform any other cleanup needed
+
+                    UnregisterListeners();
+                    _dataSource = null;
+                }
+
+                _dataSource = value;
+                if (_dataSource != null) {
+                    RegisterListeners();
+                    OnListChanged(new ListChangedEventArgs(ListChangedType.PropertyDescriptorChanged, new FieldViewPropertyDescriptor<TCollection, TItem>(_dataSource)));
+                }
+
+                OnListChanged(_resetEventArgs);
+            }
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -798,25 +754,13 @@ namespace Medidata.Lumberjack.Core.Components
 
         #region ITypedList implementation
 
-        #region Methods
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="listAccessors"></param>
         /// <returns></returns>
         string ITypedList.GetListName(PropertyDescriptor[] listAccessors) {
-            var name = "";
-
-            if (listAccessors != null) {
-                foreach (var p in listAccessors) 
-                    name += p.PropertyType.Name + "_";
-
-                name = name.TrimEnd('_');
-            } else
-                name = GetType().Name;
-
-            return name;
+            return typeof(TItem).Name;
         }
     
         /// <summary>
@@ -829,43 +773,11 @@ namespace Medidata.Lumberjack.Core.Components
         /// The PropertyDescriptorCollection that represents the properties on each item used to bind data.
         /// </returns>
         PropertyDescriptorCollection ITypedList.GetItemProperties(PropertyDescriptor[] listAccessors) {
-            ArrayList input;
+            if (listAccessors == null || listAccessors.Length == 0)
+                return _properties;
 
-            if (listAccessors != null && listAccessors.Length > 0) {
-                input = null;
-            } else {
-                input = new ArrayList(TypeDescriptor.GetProperties(typeof(Entry)));
-            }
-
-            return GetPropertyDescriptorCollection(input);
+            return TypeDescriptor.GetProperties(listAccessors[0].PropertyType, _bindPropertyFilter);
         }
-
-        #endregion
-
-        #region Protected methods
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <returns></returns>
-        protected PropertyDescriptorCollection GetPropertyDescriptorCollection(ArrayList properties) {
-            if (properties == null || properties.Count == 0)
-                return new PropertyDescriptorCollection(null);
-
-            var output = new ArrayList();
-
-            foreach (PropertyDescriptor p in properties) {
-                if (p.Attributes.Matches(new Attribute[] { new BindableAttribute(false) }))
-                    continue;
-
-                output.Add(p);
-            }
-
-            return new PropertyDescriptorCollection((PropertyDescriptor[])output.ToArray(typeof(PropertyDescriptor)));
-        }
-
-        #endregion
 
         #endregion
     }
